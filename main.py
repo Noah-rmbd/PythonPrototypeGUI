@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from page_1 import CPage1
+from page_3 import CPage3
 from navigation_bar import NavBar
 
 import sys
@@ -50,17 +51,12 @@ class Window(QWidget):
         page2Layout.addWidget(title2)
         page2.setLayout(page2Layout)
 
-        page3 = QWidget()
-        page3Layout = QVBoxLayout()
-        title3 = QLabel("Page 3", self)
-
-        page3Layout.addWidget(title3)
-        page3.setLayout(page3Layout)
+        self.page3 = CPage3(self)
 
 
         self.stacked_pages.addWidget(self.page1.widget_page1)
         self.stacked_pages.addWidget(page2)
-        self.stacked_pages.addWidget(page3)
+        self.stacked_pages.addWidget(self.page3)
 
     def switch_pages(self):
         self.stacked_pages.setCurrentIndex(self.bar.menu_nbr-1)
