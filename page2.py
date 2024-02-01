@@ -1,10 +1,4 @@
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import *
-from PyQt6.QtCore import *
-from PyQt6.QtQuick import *
-from PyQt6.QtQml import *
-from time import *
+
 from photo import FenPhoto
 from graphiques import *
 from classe_bouton import Bouton
@@ -13,10 +7,9 @@ from classe_bouton import Bouton
 import sys
 import os
 
-class Page2():
+class Page2(QWidget):
     def __init__(self,window):
         super().__init__()
-        self.widget_page2=QWidget() # on met un self car on va appeler ce gros widget dans le main
 
         title = QLabel("Ouverture de nouveaux onglets")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter) #gérer l'alignement du texte
@@ -35,7 +28,7 @@ class Page2():
         title_layout = QHBoxLayout()
         boutons_layout = QHBoxLayout()
 
-        self.widget_page2.setLayout(page2_layout) #on met le layout de page 2 avec setLayout
+        self.setLayout(page2_layout) #on met le layout de page 2 avec setLayout
 
         page2_layout.addLayout(title_layout)
         page2_layout.addLayout(boutons_layout) #on ajoute le bouton_layout avec addLayout
