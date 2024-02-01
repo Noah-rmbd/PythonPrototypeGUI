@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QFileDialog,QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 
 import sys
 import pandas as pd
@@ -12,26 +12,32 @@ class TableWindow(QWidget):
         content_layout = QVBoxLayout()
         menu_layout = QVBoxLayout()
         window_layout = QHBoxLayout()
-        self.data_frame = pd.read_csv(file_url)
+        if file_url[-4:]==".csv" :
+            self.data_frame = pd.read_csv(file_url)
+        else :
+            self.data_frame = pd.read_excel(file_url)
+
 
         self.label = QLabel("Another Window")
         self.table_widget = QTableWidget()
         self.Showdata()
-        self.nbr_edit = QLineEdit()
-        self.nbr_edit.setMaximumWidth(100)
+        self.insert_after = QPushButton("Insert column after")
         self.index=0
         self.combobox = QComboBox()
         self.combobox.addItems(list(self.data_frame.columns.values))
-        #self.combobox.currentIndexChanged(self.changed_index)
-        self.delete_button = QPushButton("Delete")
+        self.save_button = QPushButton("Export to CSV")
+        self.delete_button = QPushButton("Delete column")
         self.delete_button.setMaximumWidth(100)
         self.delete_button.clicked.connect(self.deleteColumn)
+        self.insert_after.clicked.connect(self.insertColumn)
+        self.save_button.clicked.connect(self.saveToCsv)
 
         content_layout.addWidget(self.label)
         content_layout.addWidget(self.table_widget)
         menu_layout.addWidget(self.combobox)
-        menu_layout.addWidget(self.nbr_edit)
+        menu_layout.addWidget(self.insert_after)
         menu_layout.addWidget(self.delete_button)
+        menu_layout.addWidget(self.save_button)
 
         window_layout.addLayout(content_layout)
         window_layout.addLayout(menu_layout)
@@ -41,6 +47,7 @@ class TableWindow(QWidget):
     def changed_index(self):
         self.index = self.combobox.currentIndex()
         print(self.index)
+
     def Showdata(self):
         num_rows = len(self.data_frame.index)
         num_cols = len(self.data_frame.columns)
@@ -52,13 +59,23 @@ class TableWindow(QWidget):
             for j in range(num_cols):
                 self.table_widget.setItem(i,j, QTableWidgetItem(str(self.data_frame.iat[i,j])))
 
-        #self.table_widget.removeRow(0)
-        #self.table_widget.removeColumn(0)
         self.table_widget.resizeColumnsToContents()
 
-        #print(list(self.data_frame.columns.values))
 
     def deleteColumn(self):
         col_to_delete = self.combobox.currentIndex()
         self.table_widget.removeColumn(col_to_delete)
+        self.data_frame=self.data_frame.drop(self.data_frame.columns[col_to_delete], axis = 1)
         self.combobox.removeItem(col_to_delete)
+    def saveToCsv(self):
+        #path = QFileDialog.getSaveFileUrl(self)[0]
+        path = QFileDialog.getSaveFileName(self, 'Save File', '/Users/noah-r/Downloads/')[0]
+        path = path+'.csv'
+        self.data_frame.to_csv(path)
+
+    def insertColumn(self):
+        col_to_insert = self.combobox.currentIndex()+1
+        name = "Age"
+        self.data_frame.insert(col_to_insert, name, list(range(150)), True)
+        self.combobox.insertItem(col_to_insert, name)
+        self.Showdata()
