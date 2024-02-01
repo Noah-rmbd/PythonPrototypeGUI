@@ -12,7 +12,7 @@ class DragAndDrop(QPushButton):
     def __init__(self, page):
         super().__init__()
         self.setAcceptDrops(True)
-        self.setText("Drag a .csv file")
+        self.setText("Drag a .csv or .xlsx file")
         widget_style_dark = (
             'background-color:#222222'
         )
@@ -44,7 +44,7 @@ class DragAndDrop(QPushButton):
             event.accept()
 
             #print(event.mimeData().urls())
-            if self.file_path[-4:]==".csv":
+            if self.file_path[-4:]==".csv" or self.file_path[-5:]==".xlsx":
                 print(self.file_path)
                 text = self.file_path+"\nOr\nDrag a new file to change"
                 self.setText(text)
@@ -52,7 +52,8 @@ class DragAndDrop(QPushButton):
                 self.table_window.show()
 
             else:
-                self.setText("Please drag a .csv file\nDrag a new file")
+                self.setText("Please drag a .csv or .xlsx file\nDrag a new file")
+                print(self.file_path)
 
 
 
@@ -101,16 +102,13 @@ class CPage3(QWidget):
         self.setLayout(page_layout)
 
     def browsefiles(self):
-        fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV files (*.csv)')
+        fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx)')
         if fname!=('','') :
             self.edit_url.setText(fname[0])
             self.openwindow()
 
     def openwindow(self):
         if os.path.isfile(self.edit_url.text()):
-            if self.edit_url.text()[-4:]==".csv" :
-                data_Frame = pd.read_csv(self.edit_url.text())
-                #print(data_Frame)
-
+            if self.edit_url.text()[-4:]==".csv" or self.edit_url.text()[-5:]==".xlsx":
                 self.table_window = TableWindow(self.edit_url.text())
                 self.table_window.show()
