@@ -5,6 +5,7 @@ from page_3 import CPage3
 from navigation_bar import NavBar
 
 import sys
+from page2 import *
 
 
 class Window(QWidget):
@@ -44,17 +45,12 @@ class Window(QWidget):
 
         self.page1 = CPage1(self)
 
-        page2 = QWidget()
-        page2Layout = QVBoxLayout()
-        title2 = QLabel("Page 2", self)
-
-        page2Layout.addWidget(title2)
-        page2.setLayout(page2Layout)
+        self.page2 = Page2(self)
 
         self.page3 = CPage3(self)
 
         self.stacked_pages.addWidget(self.page1)
-        self.stacked_pages.addWidget(page2)
+        self.stacked_pages.addWidget(self.page2)
         self.stacked_pages.addWidget(self.page3)
 
     def switch_pages(self):
@@ -66,3 +62,4 @@ app = QApplication([])
 window = Window()
 window.show()
 sys.exit(app.exec())
+
