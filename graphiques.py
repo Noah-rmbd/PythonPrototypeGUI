@@ -1,3 +1,4 @@
+
 import sys
 import pandas as pd
 
@@ -30,9 +31,16 @@ class FenGraph(QWidget):
         self.column_combo_ord = QComboBox(self)
         self.column_combo_ord.addItems(self.columns)
 
-        # Create button to update the plot
-        self.update_button = QPushButton("Update Plot", self)
-        self.update_button.clicked.connect(self.update_plot)
+
+        #choix du type de graphique
+        self.choose_graph_type = QComboBox(self)
+        self.choose_graph_type.addItem("Nuage de point")
+        self.choose_graph_type.addItem("Courbe")
+        self.choose_graph_type.addItem("Histogramme")
+
+        self.choose_graph_type.currentIndexChanged.connect(self.update_plot_based_on_selection)
+        self.column_combo_abs.currentIndexChanged.connect(self.update_plot_based_on_selection)
+        self.column_combo_ord.currentIndexChanged.connect(self.update_plot_based_on_selection)
 
         toolbar = NavigationToolbar2QT(self.canvas)
 
@@ -45,6 +53,7 @@ class FenGraph(QWidget):
         font.setPointSize(30)
         label.setFont(font)
         layout.addWidget(label)
+        layout.addWidget(self.choose_graph_type)
         layout.addWidget(self.canvas)
         layout.addWidget(toolbar)
 
@@ -61,30 +70,38 @@ class FenGraph(QWidget):
         layout.addLayout(layout_btn_abs)
         layout.addLayout(layout_btn_ord)
 
-        layout.addWidget(self.update_button)
+
  #############################################################################
 
         # Initial plot with all columns
-        self.update_plot()
+        self.update_plot_based_on_selection()
 
-    def update_plot(self):
+    def update_plot_based_on_selection(self):
         selected_abs_col = self.column_combo_abs.currentText()
         selected_ord_col = self.column_combo_ord.currentText()
 
-        self.ax.clear()
+        if self.choose_graph_type.currentText() == "Nuage de point":
+            self.scatter_plot(selected_abs_col, selected_ord_col)
+        elif self.choose_graph_type.currentText() == "Courbe":
+            self.courbe_plot(selected_abs_col, selected_ord_col)
 
-        # Plot the selected column
-        self.ax.plot(self.donnee[selected_abs_col],self.donnee[selected_ord_col])
+    def scatter_plot(self, abs_col, ord_col):
+        self.ax.clear()
+        self.ax.scatter(self.donnee[abs_col], self.donnee[ord_col])
         self.ax.legend()
         self.canvas.draw()
 
-# app = QApplication([])
-# window = FenGraph()
-# window.show()
-# sys.exit(app.exec())
+    def courbe_plot(self, abs_col, ord_col):
+        self.ax.clear()
+
+        sorted_data = self.donnee.sort_values(by=abs_col) #permet de trier les données pour print dans le bon ordre
+        self.ax.plot(sorted_data[abs_col], sorted_data[ord_col])
 
 
+        self.ax.legend()
+        self.canvas.draw()
 
-
-
-
+app = QApplication([])
+window = FenGraph()
+window.show()
+sys.exit(app.exec())
