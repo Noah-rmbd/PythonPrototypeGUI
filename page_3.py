@@ -1,17 +1,17 @@
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
+from table_window import TableWindow
 import pandas as pd
 import sys
 import os
 
 #Prochaine étape fusionner bouton et champ de drag and drop
 #passer le drag and drop label en bouton
-class DragAndDrop(QLabel):
+class DragAndDrop(QPushButton):
     def __init__(self, page):
         super().__init__()
         self.setAcceptDrops(True)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setText("Drag a .csv file")
         widget_style_dark = (
             'background-color:#222222'
@@ -21,6 +21,7 @@ class DragAndDrop(QLabel):
         )
         #self.setStyleSheet(widget_style)
         self.setStyleSheet(widget_style_white)
+        self.setMinimumHeight(150)
 
 
     def dragEnterEvent(self, event):
@@ -39,17 +40,21 @@ class DragAndDrop(QLabel):
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             event.setDropAction(Qt.DropAction.CopyAction)
-            file_path = event.mimeData().urls()[0].toLocalFile()
+            self.file_path = event.mimeData().urls()[0].toLocalFile()
             event.accept()
 
             #print(event.mimeData().urls())
-            if file_path[-4:]==".csv":
-                print(file_path)
-                text = file_path+"\nDrag a new file to change"
+            if self.file_path[-4:]==".csv":
+                print(self.file_path)
+                text = self.file_path+"\nOr\nDrag a new file to change"
                 self.setText(text)
+                self.table_window = TableWindow(self.file_path)
+                self.table_window.show()
 
             else:
                 self.setText("Please drag a .csv file\nDrag a new file")
+
+
 
 class CPage3(QWidget):
     def __init__(self, window):
@@ -73,11 +78,13 @@ class CPage3(QWidget):
         #edit_url widget
         self.edit_url = QLineEdit("")
         self.edit_url.setMaximumHeight(80)
+        self.edit_url.returnPressed.connect(self.openwindow)
 
         #action buttons widgets
         open_files = QPushButton("Open in finder")
         open_files.clicked.connect(self.browsefiles)
         drag_and_drop = DragAndDrop(self)
+        drag_and_drop.clicked.connect(self.browsefiles)
 
 
         #adding all the widgets to the different layouts
@@ -95,6 +102,15 @@ class CPage3(QWidget):
 
     def browsefiles(self):
         fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV files (*.csv)')
-        self.edit_url.setText(fname[0])
-        dataFrame = pd.read_csv(fname[0])
-        print(dataFrame)
+        if fname!=('','') :
+            self.edit_url.setText(fname[0])
+            self.openwindow()
+
+    def openwindow(self):
+        if os.path.isfile(self.edit_url.text()):
+            if self.edit_url.text()[-4:]==".csv" :
+                data_Frame = pd.read_csv(self.edit_url.text())
+                #print(data_Frame)
+
+                self.table_window = TableWindow(self.edit_url.text())
+                self.table_window.show()
