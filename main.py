@@ -34,7 +34,7 @@ class Window(QWidget):
         self.bar.btn3.clicked.connect(self.switch_pages)
 
         #main_container.addLayout(self.bar)
-        main_container.addLayout(self.bar.layout_bar)
+        main_container.addLayout(self.bar)
         main_container.addLayout(self.stacked_pages)
 
         self.setLayout(main_container)
@@ -53,8 +53,7 @@ class Window(QWidget):
 
         self.page3 = CPage3(self)
 
-
-        self.stacked_pages.addWidget(self.page1.widget_page1)
+        self.stacked_pages.addWidget(self.page1)
         self.stacked_pages.addWidget(page2)
         self.stacked_pages.addWidget(self.page3)
 
