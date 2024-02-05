@@ -9,14 +9,16 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 class FenGraph(QWidget):
-    def __init__(self):
+    def __init__(self, data_frame):
         super().__init__()
-        self.setWindowTitle("Graphique")
-        self.setGeometry(400, 150, 800, 600)
+        #self.setWindowTitle("Graphique")
+        #self.setGeometry(400, 150, 800, 600)
 
         # Load data from Excel file
-        self.donnee = pd.read_excel('test.xlsx')
+        self.donnee = data_frame
+
         self.columns = list(self.donnee.columns)
+        print("graph",self.columns)
 
         # Create Matplotlib figure and axis
         self.figure = Figure(figsize=(8, 5))
@@ -25,10 +27,13 @@ class FenGraph(QWidget):
 
         # ComboBox pour la sélection de la colonne(abscisse)
         self.column_combo_abs = QComboBox(self)
+        self.column_combo_abs.clear()
         self.column_combo_abs.addItems(self.columns)
+        print("OK")
 
         # ComboBox pour la sélection de la colonne (ordonnée)
         self.column_combo_ord = QComboBox(self)
+        self.column_combo_ord.clear()
         self.column_combo_ord.addItems(self.columns)
 
 
@@ -98,6 +103,8 @@ class FenGraph(QWidget):
 
         sorted_data = self.donnee.sort_values(by=abs_col) #permet de trier les données pour print dans le bon ordre
         self.ax.plot(sorted_data[abs_col], sorted_data[ord_col])
+
+
         self.ax.legend()
         self.canvas.draw()
 
@@ -109,9 +116,3 @@ class FenGraph(QWidget):
 
         self.ax.legend()
         self.canvas.draw()
-
-
-#app = QApplication([])
-#window = FenGraph()
-#window.show()
-#sys.exit(app.exec())
