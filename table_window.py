@@ -1,33 +1,35 @@
-from PyQt6.QtWidgets import QFileDialog,QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
-
+from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from graphiques import FenGraph
 import sys
 import pandas as pd
 
+
 class TableWindow(QWidget):
-    def __init__(self, file_url):
+    def __init__(self, data_frame):
         super().__init__()
-        self.setWindowTitle("Tableur de : "+file_url)
-        self.setMinimumSize(540,360)
+        #self.setWindowTitle("Tableur de : "+file_url)
+        #self.setMinimumSize(540,360)
+        #self.graph = FenGraph(file_url)
+        #self.graph.show()
 
         content_layout = QVBoxLayout()
         menu_layout = QVBoxLayout()
         window_layout = QHBoxLayout()
-        if file_url[-4:]==".csv" :
-            self.data_frame = pd.read_csv(file_url)
-        else :
-            self.data_frame = pd.read_excel(file_url)
 
+        self.data_frame = data_frame
 
-        self.label = QLabel("Another Window")
+        self.label = QLabel("File Table")
         self.table_widget = QTableWidget()
         self.Showdata()
         self.insert_after = QPushButton("Insert column after")
+        self.insert_name = QLineEdit()
         self.index=0
         self.combobox = QComboBox()
         self.combobox.addItems(list(self.data_frame.columns.values))
         self.save_button = QPushButton("Export to CSV")
         self.delete_button = QPushButton("Delete column")
-        self.delete_button.setMaximumWidth(100)
+        self.delete_button.setMaximumWidth(200)
+        self.insert_name.setMaximumWidth(200)
         self.delete_button.clicked.connect(self.deleteColumn)
         self.insert_after.clicked.connect(self.insertColumn)
         self.save_button.clicked.connect(self.saveToCsv)
@@ -36,6 +38,7 @@ class TableWindow(QWidget):
         content_layout.addWidget(self.table_widget)
         menu_layout.addWidget(self.combobox)
         menu_layout.addWidget(self.insert_after)
+        menu_layout.addWidget(self.insert_name)
         menu_layout.addWidget(self.delete_button)
         menu_layout.addWidget(self.save_button)
 
@@ -61,21 +64,24 @@ class TableWindow(QWidget):
 
         self.table_widget.resizeColumnsToContents()
 
-
     def deleteColumn(self):
         col_to_delete = self.combobox.currentIndex()
-        self.table_widget.removeColumn(col_to_delete)
-        self.data_frame=self.data_frame.drop(self.data_frame.columns[col_to_delete], axis = 1)
+        self.data_frame = self.data_frame.drop(self.data_frame.columns[col_to_delete], axis=1)
         self.combobox.removeItem(col_to_delete)
+        self.Showdata()
+
     def saveToCsv(self):
-        #path = QFileDialog.getSaveFileUrl(self)[0]
         path = QFileDialog.getSaveFileName(self, 'Save File', '/Users/noah-r/Downloads/')[0]
         path = path+'.csv'
         self.data_frame.to_csv(path)
 
     def insertColumn(self):
         col_to_insert = self.combobox.currentIndex()+1
-        name = "Age"
-        self.data_frame.insert(col_to_insert, name, list(range(150)), True)
-        self.combobox.insertItem(col_to_insert, name)
-        self.Showdata()
+        name = self.insert_name.text()
+        if name not in self.data_frame.columns:
+            self.label.setText("File Table")
+            self.data_frame.insert(col_to_insert, name, list(range(150)), True)
+            self.combobox.insertItem(col_to_insert, name)
+            self.Showdata()
+        else:
+            self.label.setText("Please choose a different name")
