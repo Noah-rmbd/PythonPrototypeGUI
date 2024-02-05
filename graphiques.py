@@ -84,6 +84,8 @@ class FenGraph(QWidget):
             self.scatter_plot(selected_abs_col, selected_ord_col)
         elif self.choose_graph_type.currentText() == "Courbe":
             self.courbe_plot(selected_abs_col, selected_ord_col)
+        elif self.choose_graph_type.currentText() == "Histogramme":
+            self.histo_plot(selected_abs_col, selected_ord_col)
 
     def scatter_plot(self, abs_col, ord_col):
         self.ax.clear()
@@ -96,12 +98,20 @@ class FenGraph(QWidget):
 
         sorted_data = self.donnee.sort_values(by=abs_col) #permet de trier les données pour print dans le bon ordre
         self.ax.plot(sorted_data[abs_col], sorted_data[ord_col])
+        self.ax.legend()
+        self.canvas.draw()
 
+    def histo_plot(self, abs_col, ord_col):
+        self.ax.clear()
+
+        sorted_data = self.donnee.sort_values(by=abs_col)  # permet de trier les données pour print dans le bon ordre
+        self.ax.bar(sorted_data[abs_col], sorted_data[ord_col])
 
         self.ax.legend()
         self.canvas.draw()
 
-app = QApplication([])
-window = FenGraph()
-window.show()
-sys.exit(app.exec())
+
+#app = QApplication([])
+#window = FenGraph()
+#window.show()
+#sys.exit(app.exec())
