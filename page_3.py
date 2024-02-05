@@ -2,6 +2,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from table_window import TableWindow
+from file_window import FileWindow
 import pandas as pd
 import sys
 import os
@@ -48,8 +49,8 @@ class DragAndDrop(QPushButton):
                 print(self.file_path)
                 text = self.file_path+"\nOr\nDrag a new file to change"
                 self.setText(text)
-                self.table_window = TableWindow(self.file_path)
-                self.table_window.show()
+                self.file_window = FileWindow(self.file_path)
+                self.file_window.show()
 
             else:
                 self.setText("Please drag a .csv or .xlsx file\nDrag a new file")
@@ -110,5 +111,5 @@ class CPage3(QWidget):
     def openwindow(self):
         if os.path.isfile(self.edit_url.text()):
             if self.edit_url.text()[-4:]==".csv" or self.edit_url.text()[-5:]==".xlsx":
-                self.table_window = TableWindow(self.edit_url.text())
-                self.table_window.show()
+                self.file_window = FileWindow(self.edit_url.text())
+                self.file_window.show()
