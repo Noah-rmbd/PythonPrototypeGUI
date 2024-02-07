@@ -1,16 +1,8 @@
 from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
-from graphiques import FenGraph
-import sys
-import pandas as pd
-
 
 class TableWindow(QWidget):
     def __init__(self, data_frame):
         super().__init__()
-        #self.setWindowTitle("Tableur de : "+file_url)
-        #self.setMinimumSize(540,360)
-        #self.graph = FenGraph(file_url)
-        #self.graph.show()
 
         content_layout = QVBoxLayout()
         menu_layout = QVBoxLayout()
@@ -23,13 +15,14 @@ class TableWindow(QWidget):
         self.Showdata()
         self.insert_after = QPushButton("Insert column after")
         self.insert_name = QLineEdit()
-        self.index=0
+        self.index = 0
         self.combobox = QComboBox()
         self.combobox.addItems(list(self.data_frame.columns.values))
         self.save_button = QPushButton("Export to CSV")
         self.delete_button = QPushButton("Delete column")
         self.delete_button.setMaximumWidth(200)
         self.insert_name.setMaximumWidth(200)
+
         self.delete_button.clicked.connect(self.deleteColumn)
         self.insert_after.clicked.connect(self.insertColumn)
         self.save_button.clicked.connect(self.saveToCsv)
@@ -46,6 +39,28 @@ class TableWindow(QWidget):
         window_layout.addLayout(menu_layout)
 
         self.setLayout(window_layout)
+
+        self.table_widget.cellChanged.connect(self.get_selected_item_position)
+
+    def is_float(self, input_str):
+        try:
+            float(input_str)
+            return True  # Input is a valid float
+        except ValueError:
+            return False  # Input is not a valid float
+    def get_selected_item_position(self):
+        selected_item = self.table_widget.currentItem()
+        if selected_item is not None:
+            if self.is_float(selected_item.text()):
+                print(selected_item.text())
+
+
+                ######ADD CODE TO MODIFY CSV FILE#######
+
+
+
+            else:
+                print("This isn't digit")
 
     def changed_index(self):
         self.index = self.combobox.currentIndex()
@@ -78,7 +93,7 @@ class TableWindow(QWidget):
     def insertColumn(self):
         col_to_insert = self.combobox.currentIndex()+1
         name = self.insert_name.text()
-        if name not in self.data_frame.columns:
+        if name not in self.data_frame.columns and name!='':
             self.label.setText("File Table")
             self.data_frame.insert(col_to_insert, name, list(range(150)), True)
             self.combobox.insertItem(col_to_insert, name)
