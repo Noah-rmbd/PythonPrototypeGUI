@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import *
-from graphiques import FenGraph
-from table_window import TableWindow
+from graphs_tab import FenGraph
+from table_tab import TableWindow
+from stats_tab import StatsTab
 import pandas as pd
 
 class FileWindow(QWidget):
@@ -18,6 +19,7 @@ class FileWindow(QWidget):
 
         self.tab_table = TableWindow(self.data_frame)
         self.tab_graph = FenGraph(self.tab_table.data_frame)
+        self.stats = StatsTab(self.tab_table.data_frame)
 
         self.tab_table.insert_after.clicked.connect(self.update_graph)
         self.tab_table.delete_button.clicked.connect(self.update_graph)
@@ -25,13 +27,15 @@ class FileWindow(QWidget):
         self.tabwidget = QTabWidget()
         self.tabwidget.addTab(self.tab_table, "Tableau")
         self.tabwidget.addTab(self.tab_graph, "Graphique")
+        self.tabwidget.addTab(self.tab_stats, "Stats")
         layout.addWidget(self.tabwidget, 0, 0)
 
     def update_graph(self):
         self.tab_graph = FenGraph(self.tab_table.data_frame)
+        self.tab_graph = StatsTab(self.tab_table.data_frame)
+        self.tabwidget.removeTab(2)
         self.tabwidget.removeTab(1)
         self.tabwidget.addTab(self.tab_graph, "Graphique")
-        #self.tab_graph = FenGraph(self.tab_table.data_frame)
-        #print(self.tab_table.data_frame)
+        self.tabwidget.addTab(self.stats, "Stats")
 
 
