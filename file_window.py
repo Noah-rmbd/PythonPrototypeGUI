@@ -32,7 +32,7 @@ class FileWindow(QWidget):
 
     def update_graph(self):
         self.tab_graph = FenGraph(self.tab_table.data_frame)
-        self.tab_graph = StatsTab(self.tab_table.data_frame)
+        self.tab_stats = StatsTab(self.tab_table.data_frame)
         self.tabwidget.removeTab(2)
         self.tabwidget.removeTab(1)
         self.tabwidget.addTab(self.tab_graph, "Graphique")
