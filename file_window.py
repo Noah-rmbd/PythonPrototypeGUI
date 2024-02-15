@@ -3,6 +3,7 @@ from graphs_tab import FenGraph
 from table_tab import TableWindow
 from stats_tab import StatsTab
 import pandas as pd
+from data_analysis_tab import FenData
 
 class FileWindow(QWidget):
     def __init__(self, file_url):
@@ -20,6 +21,7 @@ class FileWindow(QWidget):
         self.tab_table = TableWindow(self.data_frame)
         self.tab_graph = FenGraph(self.tab_table.data_frame)
         self.tab_stats = StatsTab(self.tab_table.data_frame)
+        self.tab_data_analysis = FenData(self.tab_table.data_frame)
 
         self.tab_table.insert_after.clicked.connect(self.update_tabs)
         self.tab_table.delete_button.clicked.connect(self.update_tabs)
@@ -28,6 +30,7 @@ class FileWindow(QWidget):
         self.tabwidget.addTab(self.tab_table, "Tableau")
         self.tabwidget.addTab(self.tab_graph, "Graphique")
         self.tabwidget.addTab(self.tab_stats,"Stats")
+        self.tabwidget.addTab(self.tab_data_analysis, "Analyse de données")
         layout.addWidget(self.tabwidget, 0, 0)
 
     def update_tabs(self):
