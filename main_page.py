@@ -1,7 +1,7 @@
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
-from table_window import TableWindow
+from table_tab import TableWindow
 from file_window import FileWindow
 from classe_bouton import Bouton
 import pandas as pd
@@ -97,7 +97,22 @@ class MainPage(QWidget):
         url_layout.addWidget(self.edit_url)
         url_layout.addWidget(open_files)
 
+        # Charger l'image avec QPixmap
+        pixmap_poly = QPixmap(
+            r'C:\Louis\Cours\Projet Peip2\Logos et images\logo_polytech')  # on utilise r pour faire une chaîne brute et éviter les problèmes avec les backslash
 
+        label_image_poly = QLabel()
+        label_image_poly.setMaximumHeight(150)
+        label_image_poly.setPixmap(pixmap_poly)
+
+        pixmap_laris = QPixmap(
+            r'C:\Louis\Cours\Projet Peip2\Logos et images\logo_laris')
+
+        label_image_laris = QLabel()
+        label_image_laris.setMaximumHeight(150)
+        label_image_laris.setPixmap(pixmap_laris)
+
+        image_layout = QHBoxLayout()
     ##########################################
         page_layout.addWidget(title)
     ##########################################
@@ -106,10 +121,14 @@ class MainPage(QWidget):
         file_layout.addWidget(label)
         file_layout.addLayout(url_layout)
 
+        image_layout.addWidget(label_image_poly)
+        image_layout.addWidget(label_image_laris)
         #adding all the layouts to the page widget
-
         page_layout.addLayout(file_layout)
+        page_layout.addLayout(image_layout)
+
         self.setLayout(page_layout)
+
 
     def browsefiles(self):
         fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx)')
@@ -122,3 +141,4 @@ class MainPage(QWidget):
             if self.edit_url.text()[-4:]==".csv" or self.edit_url.text()[-5:]==".xlsx":
                 self.file_window = FileWindow(self.edit_url.text())
                 self.file_window.show()
+
