@@ -7,6 +7,9 @@ from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout,QApplication
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 class FenGraph(QWidget):
     def __init__(self, data_frame):
@@ -42,6 +45,7 @@ class FenGraph(QWidget):
         self.choose_graph_type.addItem("Nuage de point")
         self.choose_graph_type.addItem("Courbe")
         self.choose_graph_type.addItem("Histogramme")
+        self.choose_graph_type.addItem("Boîte à moustaches")
 
         self.choose_graph_type.currentIndexChanged.connect(self.update_plot_based_on_selection)
         self.column_combo_abs.currentIndexChanged.connect(self.update_plot_based_on_selection)
@@ -85,12 +89,26 @@ class FenGraph(QWidget):
         selected_abs_col = self.column_combo_abs.currentText()
         selected_ord_col = self.column_combo_ord.currentText()
 
-        if self.choose_graph_type.currentText() == "Nuage de point":
-            self.scatter_plot(selected_abs_col, selected_ord_col)
-        elif self.choose_graph_type.currentText() == "Courbe":
-            self.courbe_plot(selected_abs_col, selected_ord_col)
-        elif self.choose_graph_type.currentText() == "Histogramme":
-            self.histo_plot(selected_abs_col, selected_ord_col)
+        try:
+            if self.choose_graph_type.currentText() == "Nuage de point":
+                self.scatter_plot(selected_abs_col, selected_ord_col)
+                self.column_combo_ord.setEnabled(True)
+
+            elif self.choose_graph_type.currentText() == "Courbe":
+                self.courbe_plot(selected_abs_col, selected_ord_col)
+                self.column_combo_ord.setEnabled(True)
+
+            elif self.choose_graph_type.currentText() == "Histogramme":
+                self.histo_plot(selected_abs_col)
+                self.column_combo_ord.setEnabled(False)
+
+            elif self.choose_graph_type.currentText() == "Boîte à moustaches":
+                self.box_plot(self.donnee)
+                self.column_combo_ord.setEnabled(True)
+
+        except Exception as e:
+            print(f"Exception: {e}")
+
 
     def scatter_plot(self, abs_col, ord_col):
         self.ax.clear()
@@ -108,11 +126,33 @@ class FenGraph(QWidget):
         self.ax.legend()
         self.canvas.draw()
 
-    def histo_plot(self, abs_col, ord_col):
+    def histo_plot(self, abs_col):
         self.ax.clear()
 
         sorted_data = self.donnee.sort_values(by=abs_col)  # permet de trier les données pour print dans le bon ordre
-        self.ax.bar(sorted_data[abs_col], sorted_data[ord_col])
+        self.ax.hist(sorted_data[abs_col], bins='auto', density=True) #bins gère la hauteur des barres de l'histo
+        self.ax.set_ylabel('Fréquence')
 
         self.ax.legend()
         self.canvas.draw()
+
+    def box_plot(self, data):
+        self.ax.clear()
+        self.ax.boxplot(data)
+
+        self.ax.legend()
+        self.canvas.draw()
+
+
+
+    # def box_plot (self, abs_col, ord_col):
+    #     self.ax.clear()
+    #     self.ax.sns.boxplot(x=[abs_col],y=[ord_col])
+    #
+    #     self.ax.legend()
+    #     self.canvas.draw()
+
+
+
+    # def box_plot (self,donnee, abs_col, ord_col):
+    #     sns.boxplot(x=donnee[abs_col],y=donnee[ord_col])
