@@ -1,13 +1,14 @@
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 import pandas as pd
 import numpy as np
-
-dataframe = pd.read_csv(r'C:\Louis\Cours\Projet Peip2\PythonPrototypeGUI-main(2)\PythonPrototypeGUI-main\iris.csv')
+import seaborn as sns
+'''
+dataframe = pd.read_csv('example_files/iris.csv')
 label = []
 nrow = len(dataframe.index)
 
@@ -18,15 +19,16 @@ label_array = np.array(label)
 
 matrice = dataframe.to_numpy()
 matrice_sans_label = matrice[:, :-1]
+'''
+def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm_name, test_size):
 
-def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm_name):
-    X_train, X_test, y_train, y_test = train_test_split(matrice_sans_label, label_array, test_size=0.2,
+    X_train, X_test, y_train, y_test = train_test_split(matrice_sans_label, label_array, test_size = test_size,
                                                         random_state=42)
     classifier = classifier()  # instantiate the classifier
     classifier.fit(X_train, y_train)
     predictions = classifier.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
-    print(f"{algorithm_name} Accuracy: {accuracy}")
+    #print(f"{algorithm_name} Accuracy: {accuracy}")
 
     pca = PCA(n_components=2)
     X_train_pca = pca.fit_transform(X_train)
@@ -43,6 +45,9 @@ def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm
                 y_train_number[i] = n
         n += 1
 
+
+    #plt.figure("Graph")
+    plt.subplots()
     plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1], c=y_train_number, cmap='viridis', label='Actual Labels')
 
     predictions_pca = pca.transform(X_test)
@@ -62,9 +67,29 @@ def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm
 
     plt.title(f'Actual and Predicted Labels with {algorithm_name}')
     plt.legend()
+    heat_confusion_matrix(list(y_test), list(predictions))
+    return plt
+
+def heat_confusion_matrix(actual, predicted):
+    #plt.figure("Matrix")
+    plt.subplots()
+    cm = confusion_matrix(actual, predicted)
+    sns.heatmap(cm,
+                annot=True,
+                fmt='g',
+                xticklabels=['Setosa', 'Versicolor', 'Virginica'],
+                yticklabels=['Setosa', 'Versicolor', 'Virginica']
+                )
+
+    plt.ylabel('Prediction', fontsize=13)
+    plt.xlabel('Actual', fontsize=13)
+    plt.title('Confusion Matrix', fontsize=17)
+
     plt.show()
 
-print(matrice_sans_label)
-print(label_array)
+
+
+#print(matrice_sans_label)
+#print(label_array)
 
 #plot_algorithm_result(KNeighborsClassifier, matrice_sans_label, label_array, "KNeighborg")
