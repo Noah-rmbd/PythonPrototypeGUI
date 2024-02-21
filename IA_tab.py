@@ -25,32 +25,24 @@ class IATab(QWidget):
             label.append(self.dataframe.iat[i,-1]) #-1 permet d'aller dans la denière colonne (où se trouve les labels)
 
         self.label_array = np.array(label)
-
+        
         matrice = self.dataframe.to_numpy()
         self.matrice_sans_label = matrice[:, :-1]
 
-        bouton_cart = Bouton()
-        bouton_cart.setText("Utiliser l'algorithme cart")
-        bouton_cart.setMinimumHeight(150)
-        bouton_cart.clicked.connect(self.ouvrir_cart)
+        self.algo_type_combo = QComboBox(self)
+        self.algo_type_combo.addItem("Choisissez un algorithme")
+        self.algo_type_combo.addItem("CART")
+        self.algo_type_combo.addItem("KNN")
+        self.algo_type_combo.addItem("Random Forest")
 
-        bouton_KNN = Bouton()
-        bouton_KNN.setText("Utiliser l'algorithme KNN")
-        bouton_KNN.setMinimumHeight(150)
-        bouton_KNN.clicked.connect(self.ouvrir_KNN)
 
-        bouton_random_forest = Bouton()
-        bouton_random_forest.setText("Utiliser l'algorithme random forest")
-        bouton_random_forest.setMinimumHeight(150)
-        bouton_random_forest.clicked.connect(self.ouvrir_random_forest)
+        self.algo_type_combo.currentIndexChanged.connect(self.update_based_on_selection)
+       
 
         main_layout = QVBoxLayout()
         test_size_layout = QHBoxLayout()
-
-        bouton_layout = QHBoxLayout()
-        bouton_layout.addWidget(bouton_cart)
-        bouton_layout.addWidget(bouton_KNN)
-        bouton_layout.addWidget(bouton_random_forest)
+        main_layout.addWidget(self.algo_type_combo)
+       
 
         label = QLabel()
         label.setText("Utiliser des algorithmes de machine learning")
@@ -69,6 +61,7 @@ class IATab(QWidget):
         test_size_layout.addWidget(self.test_size_box)
         main_layout.addLayout(test_size_layout)
         main_layout.addLayout(bouton_layout)
+        main_layout.addWidget(self.algo_type_combo)
         self.setLayout(main_layout)
 
     def ouvrir_cart(self):
@@ -82,3 +75,18 @@ class IATab(QWidget):
     def ouvrir_random_forest(self):
         test_size = float(self.test_size_box.currentText()[:2])/100
         plot_algorithm_result(RandomForestClassifier, self.matrice_sans_label, self.label_array, "Random Forest Algorithm", test_size)
+
+    def update_based_on_selection(self):
+
+        try:
+            if self.algo_type_combo.currentText() == "CART":
+                self.ouvrir_cart()
+
+            elif self.algo_type_combo.currentText() == "KNN":
+                self.ouvrir_KNN()
+
+            elif self.algo_type_combo.currentText()== "Random Forest":
+                self.ouvrir_random_forest()
+
+        except Exception as e:
+            print(f"Exception: {e}")
