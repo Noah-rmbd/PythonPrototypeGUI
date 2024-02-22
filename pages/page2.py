@@ -1,17 +1,7 @@
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import *
-from PyQt6.QtCore import *
-from PyQt6.QtQuick import *
-from PyQt6.QtQml import *
-from time import *
-from photo import FenPhoto
-from graphiques import *
-from classe_bouton import Bouton
+from secondary_pages.photo import FenPhoto
+from secondary_pages.graphs_tab import *
+from components.classe_bouton import Bouton
 
-
-import sys
-import os
 
 class Page2(QWidget):
     def __init__(self,window):
@@ -25,11 +15,7 @@ class Page2(QWidget):
         btn1 = Bouton()
         btn1.setText("Ouvrir une photo")
 
-        #btn2 = Bouton()
-        #btn2.setText("Afficher un graphique")
-
         btn1.setMinimumSize(100, 200)
-        #btn2.setMinimumSize(100, 200)
 
         page2_layout = QVBoxLayout()
         title_layout = QHBoxLayout()
@@ -43,34 +29,16 @@ class Page2(QWidget):
         title_layout.addWidget(title)
 
         boutons_layout.addWidget(btn1)
-        #boutons_layout.addWidget(btn2)
 
         btn1.clicked.connect(self.ouvrir_photo)
-        #btn2.clicked.connect(self.ouvrir_graph)
 
     def ouvrir_photo(self):
         fenetre_photo = FenPhoto()
         fenetre_photo.exec()
 
-    #def ouvrir_additionneur(self):
-        #fenetre_additionneur = FenAdditionneur()
-        #fenetre_additionneur.exec()
-
     def ouvrir_graph(self):
         self.fenetre_graph = FenGraph()
         self.fenetre_graph.show() #il faut ajouter self devant pour pas que la fenêtre se ferme automatiquement
 
-    # class DisplayImageWidget(QWidget):
-    #     def __init__(self):
-    #         super(DisplayImageWidget, self).__init__()
-    #         self.image = cv2.imread('2.png')
-    #         self.convert = QImage(self.image, self.image.shape[1], self.image.shape[0], self.image.strides[0],
-    #                               QImage.Format.Format_BGR888)
-    #         self.frame = QLabel()
-    #         self.frame.setPixmap(QPixmap.fromImage(self.convert))
-    #
-    #         self.layout = QHBoxLayout(self)
-    #         self.layout.addWidget(self.frame)
-    #
 
 
