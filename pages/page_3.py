@@ -99,9 +99,6 @@ class CPage3(QWidget):
         page_layout.addLayout(title_layout)
         page_layout.addLayout(file_layout)
         self.setLayout(page_layout)
-        self.file_window = FileWindow("/Users/noah-r/Downloads/8836201-6f9306ad21398ea43cba4f7d537619d0e07d5ae3/iris.csv")
-        self.file_window.show()
-
 
     def browsefiles(self):
         fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx)')
