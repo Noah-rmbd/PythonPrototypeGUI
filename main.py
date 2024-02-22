@@ -1,11 +1,11 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-from page_1 import CPage1
-from page_3 import CPage3
-from navigation_bar import NavBar
+from pages.page_1 import CPage1
+from pages.page2 import Page2
+from pages.page_3 import CPage3
+from components.navigation_bar import NavBar
 
 import sys
-from page2 import *
 
 
 class Window(QWidget):
@@ -23,8 +23,6 @@ class Window(QWidget):
         )
         self.setStyleSheet(window_style)
 
-        self.menu_nbr = 1
-
         #The window (main_container) is composed of the nav bar and the content (main_content)
         main_container = QHBoxLayout()
 
@@ -34,10 +32,10 @@ class Window(QWidget):
         self.bar.btn2.clicked.connect(self.switch_pages)
         self.bar.btn3.clicked.connect(self.switch_pages)
 
-        #main_container.addLayout(self.bar)
         main_container.addLayout(self.bar)
         main_container.addLayout(self.stacked_pages)
 
+        self.switch_pages()
         self.setLayout(main_container)
 
     def stacked_pages(self):
@@ -55,11 +53,9 @@ class Window(QWidget):
 
     def switch_pages(self):
         self.stacked_pages.setCurrentIndex(self.bar.menu_nbr-1)
-        print(self.bar.menu_nbr)
 
 
 app = QApplication([])
 window = Window()
 window.show()
 sys.exit(app.exec())
-
