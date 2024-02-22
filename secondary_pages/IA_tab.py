@@ -60,7 +60,7 @@ class IATab(QWidget):
         test_size_layout.addWidget(text_test_size)
         test_size_layout.addWidget(self.test_size_box)
         main_layout.addLayout(test_size_layout)
-        main_layout.addLayout(bouton_layout)
+        
         main_layout.addWidget(self.algo_type_combo)
         self.setLayout(main_layout)
 
