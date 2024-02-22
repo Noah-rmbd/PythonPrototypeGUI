@@ -1,10 +1,8 @@
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
-from table_window import TableWindow
-from file_window import FileWindow
-import pandas as pd
-import sys
+
+from secondary_pages.file_window import FileWindow
 import os
 
 #Prochaine étape fusionner bouton et champ de drag and drop
@@ -101,6 +99,9 @@ class CPage3(QWidget):
         page_layout.addLayout(title_layout)
         page_layout.addLayout(file_layout)
         self.setLayout(page_layout)
+        self.file_window = FileWindow("/Users/noah-r/Downloads/8836201-6f9306ad21398ea43cba4f7d537619d0e07d5ae3/iris.csv")
+        self.file_window.show()
+
 
     def browsefiles(self):
         fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx)')
