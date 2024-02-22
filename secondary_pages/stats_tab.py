@@ -1,4 +1,11 @@
 from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+import pandas as pd
+import numpy as np
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 
 class StatsTab(QWidget):
     def __init__(self, data_frame):
@@ -39,6 +46,19 @@ class StatsTab(QWidget):
         tab.addWidget(title)
         tab.addWidget(self.stats_widget)
         self.setLayout(tab)
+
+        fig, ax = plt.subplots(figsize=(16, 6))
+        #self.ax = self.figure.add_subplot(111)
+        self.canvas = FigureCanvasQTAgg(fig)
+
+        self.data_frame = self.data_frame.drop(self.data_frame.columns[-1], axis=1)
+        # Store heatmap object in a variable to easily access it when you want to include more features (such as title).
+        # Set the range of values to be displayed on the colormap from -1 to 1, and set the annotation to True to display the correlation values on the heatmap.
+        heatmap = sns.heatmap(self.data_frame.corr(), vmin=-1, vmax=1, annot=True)
+        # Give a title to the heatmap. Pad defines the distance of the title from the top of the heatmap.
+        heatmap.set_title('Correlation Heatmap', fontdict={'fontsize': 12}, pad=12)
+
+        tab.addWidget(self.canvas)
 
     def mean(self, column):
         sum = 0
