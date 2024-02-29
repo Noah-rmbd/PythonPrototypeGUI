@@ -1,20 +1,18 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-from pages.page_1 import CPage1
-from pages.page2 import Page2
-from pages.page_3 import CPage3
-from components.navigation_bar import NavBar
+
+from pages.file_page import FileWindow
+from pages.home_page import HomePage
 
 import sys
 
 
-class Window(QWidget):
+class Window(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Application")
         self.setWindowIcon(QIcon("icon.png"))
 
-        self.setMaximumSize(1080,720)
         self.setMinimumSize(540,360)
         self.setGeometry(200,100,1080,720)
 
@@ -24,36 +22,54 @@ class Window(QWidget):
         self.setStyleSheet(window_style)
 
         #The window (main_container) is composed of the nav bar and the content (main_content)
-        main_container = QHBoxLayout()
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_container = QHBoxLayout(central_widget)
 
-        self.bar = NavBar(self)
         self.stacked_pages()
-        self.bar.btn.clicked.connect(self.switch_pages)
-        self.bar.btn2.clicked.connect(self.switch_pages)
-        self.bar.btn3.clicked.connect(self.switch_pages)
-
-        main_container.addLayout(self.bar)
         main_container.addLayout(self.stacked_pages)
 
-        self.switch_pages()
-        self.setLayout(main_container)
+        file_menu = self.menuBar().addMenu("&File")
+        new_action = QAction("Open", self)
+        save_action = QAction("Save as", self)
+        new_action.triggered.connect(self.open_new_file)
+
+        file_menu.addAction(new_action)
+        file_menu.addAction(save_action)
+        save_action.setDisabled(True)
+
 
     def stacked_pages(self):
         self.stacked_pages = QStackedLayout()
 
-        self.page1 = CPage1(self)
+        self.home_page = HomePage(self)
+        self.stacked_pages.addWidget(self.home_page)
 
-        self.page2 = Page2(self)
+    def open_file_page(self, file_url):
+        self.setStyleSheet("")
+        if self.stacked_pages.currentIndex() == 1:
+            self.stacked_pages.removeWidget(self.file_page)
+        self.file_page = FileWindow(file_url)
+        self.stacked_pages.addWidget(self.file_page)
+        self.stacked_pages.setCurrentIndex(1)
 
-        self.page3 = CPage3(self)
+    def open_new_file(self):
+        fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/',
+                                            'CSV, XLSX files (*.csv *.xlsx)')
+        if fname != ('', ''):
+            file_url = fname[0]
+            self.open_file_page(file_url)
 
-        self.stacked_pages.addWidget(self.page1)
-        self.stacked_pages.addWidget(self.page2)
-        self.stacked_pages.addWidget(self.page3)
-
-    def switch_pages(self):
-        self.stacked_pages.setCurrentIndex(self.bar.menu_nbr-1)
-
+'''
+    def createMenuBar(self):
+        print("ok")
+        file_menu = self.menuBar().addMenu("&File")
+        file_menu.addAction(new_action)
+        file_menu.addAction(open_action)
+        file_menu.addAction(save_action)
+        file_menu.addSeparator()
+        file_menu.addAction(exit_action)
+'''
 
 app = QApplication([])
 window = Window()
