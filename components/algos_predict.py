@@ -1,25 +1,13 @@
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
-import pandas as pd
+
 import numpy as np
 import seaborn as sns
-'''
-dataframe = pd.read_csv('example_files/iris.csv')
-label = []
-nrow = len(dataframe.index)
 
-for i in range(nrow):
-    label.append(dataframe.iat[i, -1])
 
-label_array = np.array(label)
-
-matrice = dataframe.to_numpy()
-matrice_sans_label = matrice[:, :-1]
-'''
 def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm_name, test_size):
 
     X_train, X_test, y_train, y_test = train_test_split(matrice_sans_label, label_array, test_size = test_size,
@@ -46,8 +34,9 @@ def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm
         n += 1
 
 
-    #plt.figure("Graph")
-    plt.subplots()
+    fig1, ax = plt.subplots(figsize=(16, 6))
+
+    canvas1 = FigureCanvasQTAgg(fig1)
     plt.scatter(X_train_pca[:, 0], X_train_pca[:, 1], c=y_train_number, cmap='viridis', label='Actual Labels')
 
     predictions_pca = pca.transform(X_test)
@@ -67,12 +56,18 @@ def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm
 
     plt.title(f'Actual and Predicted Labels with {algorithm_name}')
     plt.legend()
-    heat_confusion_matrix(list(y_test), list(predictions))
-    return plt
+
+    canvas2 = heat_confusion_matrix(list(y_test), list(predictions))
+
+    return [canvas1, canvas2]
+
 
 def heat_confusion_matrix(actual, predicted):
-    #plt.figure("Matrix")
-    plt.subplots()
+    #creates the confusion matrix and returns it as a canva
+    fig2, ax = plt.subplots(figsize=(16, 6))
+
+    canvas2 = FigureCanvasQTAgg(fig2)
+
     cm = confusion_matrix(actual, predicted)
     sns.heatmap(cm,
                 annot=True,
@@ -84,12 +79,5 @@ def heat_confusion_matrix(actual, predicted):
     plt.ylabel('Prediction', fontsize=13)
     plt.xlabel('Actual', fontsize=13)
     plt.title('Confusion Matrix', fontsize=17)
+    return canvas2
 
-    plt.show()
-
-
-
-#print(matrice_sans_label)
-#print(label_array)
-
-#plot_algorithm_result(KNeighborsClassifier, matrice_sans_label, label_array, "KNeighborg")
