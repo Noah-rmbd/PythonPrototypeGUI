@@ -48,7 +48,7 @@ class StatsTab(QWidget):
         self.setLayout(tab)
 
         fig, ax = plt.subplots(figsize=(16, 6))
-        #self.ax = self.figure.add_subplot(111)
+
         self.canvas = FigureCanvasQTAgg(fig)
 
         self.data_frame = self.data_frame.drop(self.data_frame.columns[-1], axis=1)
@@ -56,9 +56,10 @@ class StatsTab(QWidget):
         # Set the range of values to be displayed on the colormap from -1 to 1, and set the annotation to True to display the correlation values on the heatmap.
         heatmap = sns.heatmap(self.data_frame.corr(), vmin=-1, vmax=1, annot=True)
         # Give a title to the heatmap. Pad defines the distance of the title from the top of the heatmap.
-        heatmap.set_title('Correlation Heatmap', fontdict={'fontsize': 12}, pad=12)
+        heatmap.set_title('Correlation Heatmap from stats', fontdict={'fontsize': 12}, pad=12)
 
         tab.addWidget(self.canvas)
+
 
     def mean(self, column):
         sum = 0
