@@ -30,8 +30,8 @@ class FileWindow(QWidget):
         self.tab_table.save_button.clicked.connect(self.update_tabs)
         self.tab_table.save_changes.clicked.connect(self.update_tabs)
         self.tab_table.normalize_button.clicked.connect(self.update_tabs)
+        self.tab_table.standardize_button.clicked.connect(self.update_tabs)
         self.tab_table.back_button.clicked.connect(self.update_tabs)
-
 
         self.tabwidget = QTabWidget()
         self.tabwidget.addTab(self.tab_table, "Tableau")
@@ -58,10 +58,3 @@ class FileWindow(QWidget):
         self.tabwidget.addTab(self.tab_stats, "Stats")
         self.tabwidget.addTab(self.tab_IA, "IA")
         self.tabwidget.addTab(self.tab_data_analysis, "Analyse de données et choix de caractéristiques")
-
-
-
-
-
-
-
