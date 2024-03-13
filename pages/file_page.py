@@ -38,7 +38,7 @@ class FileWindow(QWidget):
         self.tabwidget.addTab(self.tab_graph, "Graphique")
         self.tabwidget.addTab(self.tab_stats,"Stats")
         self.tabwidget.addTab(self.tab_IA, "IA")
-        self.tabwidget.addTab(self.tab_data_analysis,"Analyse de données et choix de caractéristiques")
+        self.tabwidget.addTab(self.tab_data_analysis, "Analyse de données et choix de caractéristiques")
         layout.addWidget(self.tabwidget, 0, 0)
 
     def update_tabs(self):
@@ -46,7 +46,10 @@ class FileWindow(QWidget):
 
         self.tab_graph = FenGraph(self.data_frame)
         self.tab_stats = StatsTab(self.data_frame)
+        self.tab_IA = IATAB(self.data_frame)
+        self.tab_data_analysis = FenData(self.data_frame)
 
+        self.tabwidget.removeTab(4)
         self.tabwidget.removeTab(3)
         self.tabwidget.removeTab(2)
         self.tabwidget.removeTab(1)
@@ -54,6 +57,7 @@ class FileWindow(QWidget):
         self.tabwidget.addTab(self.tab_graph, "Graphique")
         self.tabwidget.addTab(self.tab_stats, "Stats")
         self.tabwidget.addTab(self.tab_IA, "IA")
+        self.tabwidget.addTab(self.tab_data_analysis, "Analyse de données et choix de caractéristiques")
 
 
 
