@@ -46,7 +46,7 @@ class FileWindow(QWidget):
 
         self.tab_graph = FenGraph(self.data_frame)
         self.tab_stats = StatsTab(self.data_frame)
-        self.tab_IA = IATAB(self.data_frame)
+        self.tab_IA = IATab(self.data_frame)
         self.tab_data_analysis = FenData(self.data_frame)
 
         self.tabwidget.removeTab(4)
