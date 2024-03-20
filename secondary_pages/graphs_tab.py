@@ -103,17 +103,27 @@ class FenGraph(QWidget):
                 self.column_combo_ord.setEnabled(False)
 
             elif self.choose_graph_type.currentText() == "Boîte à moustaches":
-                self.box_plot(self.donnee)
+                self.box_plot(selected_abs_col, selected_ord_col)
                 self.column_combo_ord.setEnabled(True)
 
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception choix de type de graph: {e}")
+
+
+
+
 
 
     def scatter_plot(self, abs_col, ord_col):
         self.ax.clear()
         self.ax.scatter(self.donnee[abs_col], self.donnee[ord_col])
         self.ax.legend()
+
+        try:
+            self.ax.set_xlabel(abs_col)
+            self.ax.set_ylabel(ord_col)
+        except:
+            print (f"exeption label abs et ord: {e}")
         self.canvas.draw()
 
     def courbe_plot(self, abs_col, ord_col):
@@ -124,6 +134,11 @@ class FenGraph(QWidget):
 
 
         self.ax.legend()
+        try:
+            self.ax.set_xlabel(abs_col)
+            self.ax.set_ylabel(ord_col)
+        except:
+            print(f"exeption label abs et ord: {e}")
         self.canvas.draw()
 
     def histo_plot(self, abs_col):
@@ -132,17 +147,26 @@ class FenGraph(QWidget):
         sorted_data = self.donnee.sort_values(by=abs_col)  # permet de trier les données pour print dans le bon ordre
         self.ax.hist(sorted_data[abs_col], bins='auto', density=True) #bins gère la hauteur des barres de l'histo
         self.ax.set_ylabel('Fréquence')
+        self.ax.set_xlabel(abs_col)
 
         self.ax.legend()
         self.canvas.draw()
 
-    def box_plot(self, data):
+    def box_plot(self, abs_col, ord_col):
         self.ax.clear()
-        self.ax.boxplot(data)
+
+        #sorted_data = self.donnee.sort_values(by=abs_col)  # Sort the data for plotting
+
+        sns.boxplot(x=self.donnee[abs_col], y=self.donnee[ord_col], ax=self.ax)
 
         self.ax.legend()
-        self.canvas.draw()
+        self.ax.set_ylabel(ord_col)
+        self.ax.set_xlabel(abs_col)
 
+        # self.ax.set_ylabel('Valeurs')
+        # self.ax.set_xlabel('Variable')
+
+        self.canvas.draw()
 
 
     # def box_plot (self, abs_col, ord_col):
