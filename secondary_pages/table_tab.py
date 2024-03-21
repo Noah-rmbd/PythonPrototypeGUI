@@ -1,11 +1,8 @@
 from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 from sklearn.model_selection import train_test_split
-from PyQt6.QtGui import QKeySequence
-from PyQt6.QtCore import Qt
-from sklearn import preprocessing
 import numpy as np
 
-class TableWindow(QWidget):
+class TableTab(QWidget):
     def __init__(self, data_frame):
         super().__init__()
 
@@ -13,13 +10,13 @@ class TableWindow(QWidget):
         menu_layout = QVBoxLayout()
         selected_col_layout = QVBoxLayout()
         add_col_layout = QVBoxLayout()
-        self.modify_col_layout = QVBoxLayout()
+        modify_col_layout = QVBoxLayout()
         split_layout = QHBoxLayout()
         export_changes_layout = QVBoxLayout()
         window_layout = QHBoxLayout()
 
         self.data_frame = data_frame
-        self.data_frame_is_transformed = False
+        self.data_frame_is_splited = False
         self.df_versions = []
         self.df_versions.append(self.data_frame.copy())
         self.df_index_current_version = 0
@@ -77,19 +74,21 @@ class TableWindow(QWidget):
         add_col_layout.addWidget(self.insert_name)
         add_col_layout.addWidget(self.insert_after)
         add_col_layout.addWidget(self.delete_button)
-        self.modify_col_layout.addLayout(split_layout)
+        modify_col_layout.addLayout(split_layout)
         split_layout.addWidget(self.split_button)
         split_layout.addWidget(self.split_combo)
-        #split_layout
-        #modify_col_layout.addWidget(self.normalize_button)
-        #modify_col_layout.addWidget(self.standardize_button)
+        modify_col_layout.addWidget(self.normalize_button)
+        modify_col_layout.addWidget(self.standardize_button)
         export_changes_layout.addWidget(self.back_button)
         export_changes_layout.addWidget(self.save_changes)
         export_changes_layout.addWidget(self.save_button)
 
+        self.normalize_button.setEnabled(False)
+        self.standardize_button.setEnabled(False)
+
         menu_layout.addLayout(selected_col_layout)
         menu_layout.addLayout(add_col_layout)
-        menu_layout.addLayout(self.modify_col_layout)
+        menu_layout.addLayout(modify_col_layout)
         menu_layout.addLayout(export_changes_layout)
 
         window_layout.addLayout(content_layout)
@@ -123,7 +122,6 @@ class TableWindow(QWidget):
             if (selected_column+1) != len(self.data_frame.columns) :
                 if self.is_float(selected_item.text()):
                     self.data_frame.iat[selected_row,selected_column] = float(selected_item.text())
-                    #print("Tout va bien")
 
                 else:
                     print("This isn't digit")
@@ -133,7 +131,6 @@ class TableWindow(QWidget):
 
     def changed_index(self):
         self.index = self.combobox.currentIndex()
-        #print(self.index)
 
     def Showdata(self):
         num_rows = len(self.data_frame.index)
@@ -162,14 +159,13 @@ class TableWindow(QWidget):
         data = self.data_frame.to_numpy()
         data_without_label = data[:, :-1]  # Numpy array that contains data frame values without label
 
-        self.X_train, X_test, y_train, y_test = train_test_split(data_without_label, label_array, test_size=test_size,
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(data_without_label, label_array, test_size=test_size,
                                                             random_state=42)
-        print(self.X_train)
+
+        self.splited_mode()
+        self.split_button.setEnabled(False)
 
 
-        if self.modify_col_layout.count()==1:
-            self.modify_col_layout.addWidget(self.normalize_button)
-            self.modify_col_layout.addWidget(self.standardize_button)
 
 
 
@@ -205,23 +201,26 @@ class TableWindow(QWidget):
 
     def normalizeColumn(self):
         col_names = self.data_frame.columns[:-1]
+
         for i in col_names:
             array = list(self.data_frame[i])
             index_column = list(self.data_frame.columns).index(i)
-            test_column = self.X_train[:, index_column]
-            array_test = test_column.tolist()
+            train_column = self.X_train[:, index_column]
+            list_train = train_column.tolist()
 
-            min_val = min(array_test)
-            max_val = max(array_test)
+            min_val = min(list_train)
+            max_val = max(list_train)
 
             # Normalize the data
             normalized_arr = [(x - min_val) / (max_val - min_val) for x in array]
 
             self.data_frame[i] = normalized_arr
         self.df_versions.append(self.data_frame.copy())
+        self.split_data()
+
+        self.normalize_button.setEnabled(False)
+        self.standardize_button.setEnabled(False)
         self.Showdata()
-
-
 
     def mean(self, column):
         sum = 0
@@ -243,27 +242,34 @@ class TableWindow(QWidget):
 
     def standardizeColumn(self):
         col_names = self.data_frame.columns[:-1]
+        print(self.data_frame)
         for i in col_names:
             array = list(self.data_frame[i])
 
             index_column = list(self.data_frame.columns).index(i)
-            test_column = self.X_train[:, index_column]
-            array_test = test_column.tolist()
+            train_column = self.X_train[:, index_column]
+            array_train = train_column.tolist()
+            print(array, array_train, "index", index_column)
 
-            mean = self.mean(array_test)
-            std_dev = self.sd(array_test)
+            mean = self.mean(array_train)
+            std_dev = self.sd(array_train)
 
             standardized_arr = [(x - mean) / std_dev for x in array]
-            #print(array)
-            #print(mean)
-            #print("Standardized")
+
             self.data_frame[i] = standardized_arr
 
         self.df_versions.append(self.data_frame.copy())
+        self.split_data()
+        self.normalize_button.setEnabled(False)
+        self.standardize_button.setEnabled(False)
         self.Showdata()
 
 
     def change_df_version(self):
+        print("Retour, voici valeur de data is splited : ",self.data_frame_is_splited)
+        if self.data_frame_is_splited:
+            self.unsplited_mode()
+
         if len(self.df_versions) > 1:
             self.df_versions.pop()
             self.data_frame = self.df_versions[-1].copy()
@@ -271,4 +277,32 @@ class TableWindow(QWidget):
 
         self.combobox.clear()
         self.combobox.addItems(list(self.data_frame.columns.values))
+
+    def splited_mode(self):
+        self.normalize_button.setEnabled(True)
+        self.standardize_button.setEnabled(True)
+        self.insert_after.setEnabled(False)
+        self.delete_button.setEnabled(False)
+        self.insert_name.setEnabled(False)
+        self.combobox.setEnabled(False)
+        self.split_combo.setEnabled(False)
+        self.save_changes.setEnabled(False)
+        self.normalize_button.setEnabled(True)
+        self.standardize_button.setEnabled(True)
+
+        self.data_frame_is_splited = True
+
+    def unsplited_mode(self):
+        self.normalize_button.setEnabled(False)
+        self.standardize_button.setEnabled(False)
+        self.insert_after.setEnabled(True)
+        self.delete_button.setEnabled(True)
+        self.insert_name.setEnabled(True)
+        self.combobox.setEnabled(True)
+        self.split_combo.setEnabled(True)
+        self.save_changes.setEnabled(True)
+        self.split_button.setEnabled(True)
+
+        self.X_train, self.X_test, self.y_train, self.y_test = None, None, None, None
+        self.data_frame_is_splited = False
 
