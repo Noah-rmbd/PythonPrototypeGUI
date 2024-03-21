@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt6.QtWidgets import *
 from secondary_pages.graphs_tab import FenGraph
-from secondary_pages.table_tab import TableWindow
+from secondary_pages.data_modification import TableWindow
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -10,23 +10,24 @@ from sklearn.neural_network import MLPClassifier
 from components.classe_bouton import *
 from components.algos_predict import plot_algorithm_result
 
-
 import pandas as pd
 import sys
 
+
 class IATab(QWidget):
-    def __init__(self,dataframe):
+    def __init__(self, dataframe):
         super().__init__()
         self.dataframe = dataframe
-        #self.dataframe = pd.read_csv(r'C:\Louis\Cours\Projet Peip2\PythonPrototypeGUI-main(3)\PythonPrototypeGUI-main\iris.csv')
+        # self.dataframe = pd.read_csv(r'C:\Louis\Cours\Projet Peip2\PythonPrototypeGUI-main(3)\PythonPrototypeGUI-main\iris.csv')
         label = []
         nrow = len(self.dataframe.index)
 
         for i in range(nrow):
-            label.append(self.dataframe.iat[i,-1]) #-1 permet d'aller dans la denière colonne (où se trouve les labels)
+            label.append(
+                self.dataframe.iat[i, -1])  # -1 permet d'aller dans la denière colonne (où se trouve les labels)
 
         self.label_array = np.array(label)
-        
+
         matrice = self.dataframe.to_numpy()
         self.matrice_sans_label = matrice[:, :-1]
 
@@ -37,15 +38,14 @@ class IATab(QWidget):
         self.algo_type_combo.addItem("Random Forest")
         self.algo_type_combo.addItem("MLP")
 
-
         self.algo_type_combo.currentIndexChanged.connect(self.hyperpara_based_on_selection)
 
         self.update_hyperparameter_button = QPushButton("Changer les hyperparamètres")
         self.update_hyperparameter_button.clicked.connect(self.hyperpara_based_on_selection)
 
-        self.plot_button=QPushButton("Plot")
+        self.plot_button = QPushButton("Plot")
         self.plot_button.clicked.connect(self.plot_based_on_selection)
-
+        self.plot_button.setEnabled(False)
 
         label = QLabel()
         label.setText("Utiliser des algorithmes de machine learning")
@@ -58,7 +58,6 @@ class IATab(QWidget):
         label.setFont(font)
 
         text_test_size = QLabel("Select the percentage of items used for testing model :")
-
 
         self.test_size_box = QComboBox()
         self.test_size_box.setMaximumWidth(100)
@@ -81,7 +80,6 @@ class IATab(QWidget):
         self.insert_tree_number = None
         self.actual_criterion = None
 
-
         ##################################################################
 
         #### Fenêtres additionnelles #####
@@ -91,24 +89,26 @@ class IATab(QWidget):
         self.fen_hyperpara_MLP = QDialog()
         #####################################
 
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(label)
+        self.main_layout = QVBoxLayout()
+        self.main_layout.addWidget(label)
+        self.canvas_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.canvas_layout)
         ############## tableau métriques #########################
         # table_widget = QTableWidget()
         # self.setup_table(actual_labels, predicted_labels)
         # main_layout.addWidget(table_widget)
         #####################################################
 
-        main_layout.addWidget(self.algo_type_combo)
-        main_layout.addWidget(self.plot_button)
-        main_layout.addWidget(self.update_hyperparameter_button)
+        self.main_layout.addWidget(self.algo_type_combo)
+        self.main_layout.addWidget(self.plot_button)
+        self.main_layout.addWidget(self.update_hyperparameter_button)
         test_size_layout = QHBoxLayout()
         test_size_layout.addWidget(text_test_size)
         test_size_layout.addWidget(self.test_size_box)
-        main_layout.addLayout(test_size_layout)
-        #main_layout.addLayout(bouton_layout)
+        self.main_layout.addLayout(test_size_layout)
+        # main_layout.addLayout(bouton_layout)
 
-        self.setLayout(main_layout)
+        self.setLayout(self.main_layout)
 
     def process_neighbors_input(self):
         k_value = self.insert_neighbors_nb.text()
@@ -131,7 +131,6 @@ class IATab(QWidget):
         except Exception as e:
             print(f"Exception in process_tree_input: {e}")
 
-
     def setup_table(self, actual_labels, predicted_labels):
         self.table_widget.setColumnCount(2)
         self.table_widget.setHorizontalHeaderLabels(['Metric', 'Value'])
@@ -153,16 +152,23 @@ class IATab(QWidget):
             self.table_widget.setItem(row, 1, QTableWidgetItem(f"{value:.4f}"))
 
     def plot_cart(self):
-        test_size = float(self.test_size_box.currentText()[:2])/100
+        test_size = float(self.test_size_box.currentText()[:2]) / 100
 
         if self.actual_criterion is not None:
-            cart_classifier = DecisionTreeClassifier(criterion= self.actual_criterion)
-            print("used criterion:",self.actual_criterion)
+            cart_classifier = DecisionTreeClassifier(criterion=self.actual_criterion)
+            print("used criterion:", self.actual_criterion)
         else:
             # Default to KNeighborsClassifier with default parameters
             cart_classifier = DecisionTreeClassifier()
             print("used criterion: default")
-        plot_algorithm_result(cart_classifier, self.matrice_sans_label, self.label_array, "Cart Algorithm", test_size)
+
+        canvas = plot_algorithm_result(cart_classifier, self.matrice_sans_label, self.label_array, "Cart Algorithm", test_size)
+        for i in reversed(range(self.canvas_layout.count())):
+            self.canvas_layout.itemAt(i).widget().setParent(None)
+
+        self.canvas_layout.addWidget(canvas[0])
+        self.canvas_layout.addWidget(canvas[1])
+
 
     def plot_KNN(self):
         test_size = float(self.test_size_box.currentText()[:2]) / 100
@@ -174,16 +180,33 @@ class IATab(QWidget):
             # Default to KNeighborsClassifier with default parameters
             knn_classifier = KNeighborsClassifier()
 
-        plot_algorithm_result(knn_classifier, self.matrice_sans_label, self.label_array, "KNN Algorithm", test_size)
+        canvas = plot_algorithm_result(knn_classifier, self.matrice_sans_label, self.label_array, "KNN Algorithm", test_size)
+        for i in reversed(range(self.canvas_layout.count())):
+            self.canvas_layout.itemAt(i).widget().setParent(None)
+
+        self.canvas_layout.addWidget(canvas[0])
+        self.canvas_layout.addWidget(canvas[1])
 
     def plot_random_forest(self):
-        test_size = float(self.test_size_box.currentText()[:2])/100
-        plot_algorithm_result(RandomForestClassifier, self.matrice_sans_label, self.label_array, "Random Forest Algorithm", test_size)
+        test_size = float(self.test_size_box.currentText()[:2]) / 100
+        canvas = plot_algorithm_result(RandomForestClassifier, self.matrice_sans_label, self.label_array,
+                              "Random Forest Algorithm", test_size)
+
+        for i in reversed(range(self.canvas_layout.count())):
+            self.canvas_layout.itemAt(i).widget().setParent(None)
+
+        self.canvas_layout.addWidget(canvas[0])
+        self.canvas_layout.addWidget(canvas[1])
 
     def plot_MLP(self):
         test_size = float(self.test_size_box.currentText()[:2]) / 100
-        plot_algorithm_result(MLPClassifier, self.matrice_sans_label, self.label_array,
+        canvas = plot_algorithm_result(MLPClassifier, self.matrice_sans_label, self.label_array,
                               "MLP algorithm", test_size)
+        for i in reversed(range(self.canvas_layout.count())):
+            self.canvas_layout.itemAt(i).widget().setParent(None)
+
+        self.canvas_layout.addWidget(canvas[0])
+        self.canvas_layout.addWidget(canvas[1])
 
     def plot_based_on_selection(self):
 
@@ -203,7 +226,6 @@ class IATab(QWidget):
         except Exception as e:
             print(f"Exception: {e}")
 
-
     def hyperpara_based_on_selection(self):
 
         try:
@@ -222,8 +244,6 @@ class IATab(QWidget):
         except Exception as e:
             print(f"Exception: {e}")
 
-
-
     def hyperpara_CART(self):
 
         self.fen_hyperpara_CART.setWindowTitle("CART Hyperparameter")
@@ -231,7 +251,7 @@ class IATab(QWidget):
         ok_button = QPushButton("OK")
         ok_button.clicked.connect(self.fen_hyperpara_CART.accept)
 
-        layout=QVBoxLayout()
+        layout = QVBoxLayout()
         layout.addWidget(self.criterian_combo)
         layout.addWidget(ok_button)
         self.fen_hyperpara_CART.setLayout(layout)
@@ -259,11 +279,11 @@ class IATab(QWidget):
         layout.addWidget(self.insert_neighbors_nb)
         layout.addWidget(ok_button)
         self.fen_hyperpara_KNN.setLayout(layout)
-        self.fen_hyperpara_KNN.setGeometry(500,200,300,300)
+        self.fen_hyperpara_KNN.setGeometry(500, 200, 300, 300)
         self.fen_hyperpara_KNN.exec()
 
     def hyperpara_RF(self):
-        #self.fen_hyperpara_RF = QDialog()
+        # self.fen_hyperpara_RF = QDialog()
         self.fen_hyperpara_RF.setWindowTitle("RandomForest Hyperparameter")
 
         self.insert_tree_number = QLineEdit()
@@ -274,9 +294,8 @@ class IATab(QWidget):
         # Connect the function to the editingFinished signal
         self.insert_tree_number.editingFinished.connect(self.process_tree_input)
 
-
         ok_button = QPushButton("OK")
-        ok_button.clicked.connect(self.fen_hyperpara_RF.accept) #accept ferme la fenêtre
+        ok_button.clicked.connect(self.fen_hyperpara_RF.accept)  # accept ferme la fenêtre
 
         layout = QVBoxLayout()
         layout.addWidget(self.criterian_combo)
@@ -306,21 +325,17 @@ class IATab(QWidget):
         self.fen_hyperpara_MLP.setGeometry(500, 200, 300, 300)
         self.fen_hyperpara_MLP.exec()
 
-
     def criterion_update(self):
-        if self.criterian_combo.currentText() == "Gini (default)" :
+        if self.criterian_combo.currentText() == "Gini (default)":
             self.actual_criterion = "gini"
 
-        elif self.criterian_combo.currentText() == "Entropie" :
+        elif self.criterian_combo.currentText() == "Entropie":
             self.actual_criterion = "entropy"
 
-        elif self.criterian_combo.currentText() == "Log loss" :
+        elif self.criterian_combo.currentText() == "Log loss":
             self.actual_criterion = "log_loss"
 
         print(self.actual_criterion)
-
-
-
 
 # app = QApplication([])
 # window = IATab()
