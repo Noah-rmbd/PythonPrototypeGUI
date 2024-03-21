@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QApplication, QMa
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-class TableTab(QWidget):
+class TableWindow(QWidget):
     def __init__(self, data_frame):
         super().__init__()
 
