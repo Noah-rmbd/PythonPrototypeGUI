@@ -1,12 +1,13 @@
-from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QApplication, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 from sklearn.model_selection import train_test_split
+import pandas as pd
 import numpy as np
 
 class TableWindow(QWidget):
     def __init__(self, data_frame):
         super().__init__()
 
-        content_layout = QVBoxLayout()
+        self.content_layout = QVBoxLayout()
         menu_layout = QVBoxLayout()
         selected_col_layout = QVBoxLayout()
         add_col_layout = QVBoxLayout()
@@ -66,8 +67,8 @@ class TableWindow(QWidget):
         self.back_button.clicked.connect(self.change_df_version)
         self.split_button.clicked.connect(self.split_data)
 
-        content_layout.addWidget(self.label)
-        content_layout.addWidget(self.table_widget)
+        #self.content_layout.addWidget(self.label)
+        #self.content_layout.addWidget(self.table_widget)
         selected_col_layout.addWidget(text_selected_col)
         selected_col_layout.addWidget(self.combobox)
         add_col_layout.addWidget(text_new_col)
@@ -91,7 +92,7 @@ class TableWindow(QWidget):
         menu_layout.addLayout(modify_col_layout)
         menu_layout.addLayout(export_changes_layout)
 
-        window_layout.addLayout(content_layout)
+        window_layout.addLayout(self.content_layout)
         window_layout.addLayout(menu_layout)
 
         self.setLayout(window_layout)
@@ -133,6 +134,9 @@ class TableWindow(QWidget):
         self.index = self.combobox.currentIndex()
 
     def Showdata(self):
+        for i in reversed(range(self.content_layout.count())):
+            self.content_layout.itemAt(i).widget().setParent(None)
+
         num_rows = len(self.data_frame.index)
         num_cols = len(self.data_frame.columns)
         self.table_widget.setColumnCount(num_cols)
@@ -144,6 +148,46 @@ class TableWindow(QWidget):
                 self.table_widget.setItem(i,j, QTableWidgetItem(str(self.data_frame.iat[i,j])))
 
         self.table_widget.resizeColumnsToContents()
+        self.content_layout.addWidget(self.table_widget)
+
+    def Showdata_splited(self, df_training, df_testing):
+        for i in reversed(range(self.content_layout.count())):
+            self.content_layout.itemAt(i).widget().setParent(None)
+
+        table_1_label = QLabel("Training data")
+        table_2_label = QLabel("Testing data")
+
+        table_1 = QTableWidget()
+        table_2 = QTableWidget()
+
+        num_rows1 = len(df_training.index)
+        num_cols1 = len(df_training.columns)
+
+        num_rows2 = len(df_testing.index)
+        num_cols2 = len(df_testing.columns)
+
+        table_1.setColumnCount(num_cols1)
+        table_2.setColumnCount(num_cols2)
+        table_1.setRowCount(num_rows1)
+        table_2.setRowCount(num_rows2)
+        table_1.setHorizontalHeaderLabels(df_training.columns)
+        table_2.setHorizontalHeaderLabels(df_training.columns)
+
+        for i in range(num_rows1):
+            for j in range(num_cols1):
+                table_1.setItem(i, j, QTableWidgetItem(str(df_training.iat[i,j])))
+
+        for i in range(num_rows2):
+            for j in range(num_cols2):
+                table_2.setItem(i, j, QTableWidgetItem(str(df_testing.iat[i,j])))
+
+        table_1.resizeColumnsToContents()
+        table_2.resizeColumnsToContents()
+
+        self.content_layout.addWidget(table_1_label)
+        self.content_layout.addWidget(table_1)
+        self.content_layout.addWidget(table_2_label)
+        self.content_layout.addWidget(table_2)
 
     def split_data(self):
         test_size = float(self.split_combo.currentText()[:2]) / 100
@@ -165,6 +209,11 @@ class TableWindow(QWidget):
         self.splited_mode()
         self.split_button.setEnabled(False)
 
+        training_numpy = np.insert(self.X_train, 4, self.y_train, axis=1)
+        testing_numpy = np.insert(self.X_test, 4, self.y_test, axis=1)
+        df_training = pd.DataFrame(training_numpy, columns=['sepal.length', 'sepal.width', 'petal.length', 'petal.width', 'variety'])
+        df_testing = pd.DataFrame(testing_numpy, columns=['sepal.length', 'sepal.width', 'petal.length', 'petal.width', 'variety'])
+        self.Showdata_splited(df_training, df_testing)
 
 
 
@@ -277,6 +326,7 @@ class TableWindow(QWidget):
 
         self.combobox.clear()
         self.combobox.addItems(list(self.data_frame.columns.values))
+        self.Showdata()
 
     def splited_mode(self):
         self.normalize_button.setEnabled(True)
