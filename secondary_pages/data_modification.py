@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import numpy as np
 
-class TableWindow(QWidget):
+class DataModification(QWidget):
     def __init__(self, data_frame):
         super().__init__()
 
