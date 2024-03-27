@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-
+import pandas as pd
+import time
 from pages.file_page import FileWindow
 from pages.home_page import HomePage
 
@@ -47,9 +48,33 @@ class Window(QMainWindow):
 
     def open_file_page(self, file_url):
         self.setStyleSheet("")
+
         if self.stacked_pages.currentIndex() == 1:
             self.stacked_pages.removeWidget(self.file_page)
-        self.file_page = FileWindow(file_url)
+
+        if file_url[-4:] == ".csv":
+            self.data_frame = pd.read_csv(file_url)
+        else:
+            self.data_frame = pd.read_excel(file_url)
+
+        if len(self.data_frame.index) >= 1000:
+            #if the file is too large, home_page will get a loading bar to inform user
+            question = QMessageBox.question(
+                self,
+                'Confirmation',
+                "Souhaitez-vous l'intégralité des fonctionnalités ? (cette opération peut prendre du temps)",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            if question == QMessageBox.StandardButton.Yes:
+                self.home_page.large_file()
+                self.file_page = FileWindow(self.data_frame, self.home_page.bar, True)
+            else:
+                self.home_page.large_file()
+                self.file_page = FileWindow(self.data_frame, self.home_page.bar, False)
+
+        else: #else there is no bar
+            self.file_page = FileWindow(self.data_frame, None, True)
+
         self.stacked_pages.addWidget(self.file_page)
         self.stacked_pages.setCurrentIndex(1)
 
@@ -60,16 +85,6 @@ class Window(QMainWindow):
             file_url = fname[0]
             self.open_file_page(file_url)
 
-'''
-    def createMenuBar(self):
-        print("ok")
-        file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction(new_action)
-        file_menu.addAction(open_action)
-        file_menu.addAction(save_action)
-        file_menu.addSeparator()
-        file_menu.addAction(exit_action)
-'''
 
 app = QApplication([])
 window = Window()
