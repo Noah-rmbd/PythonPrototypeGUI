@@ -65,13 +65,13 @@ class DragAndDrop(QPushButton):
 
 
 class HomePage(QWidget):
-    def __init__(self,main_window):
+    def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
         # Creating all the layouts
         page_layout = QVBoxLayout()
         url_layout = QHBoxLayout()
-        file_layout = QVBoxLayout()
+        self.file_layout = QVBoxLayout()
 
         # title widget
         title = QLabel("Accueil")
@@ -94,7 +94,6 @@ class HomePage(QWidget):
         drag_and_drop.clicked.connect(self.browsefiles)
 
         # adding all the widgets to the different layouts
-
         url_layout.addWidget(self.edit_url)
         url_layout.addWidget(open_files)
 
@@ -117,15 +116,15 @@ class HomePage(QWidget):
         ##########################################
         page_layout.addWidget(title)
         ##########################################
-        file_layout.addWidget(drag_and_drop)
+        self.file_layout.addWidget(drag_and_drop)
         label = QLabel("Vous pouvez aussi copier l'url:")
-        file_layout.addWidget(label)
-        file_layout.addLayout(url_layout)
+        self.file_layout.addWidget(label)
+        self.file_layout.addLayout(url_layout)
 
         image_layout.addWidget(label_image_poly)
         image_layout.addWidget(label_image_laris)
         # adding all the layouts to the page widget
-        page_layout.addLayout(file_layout)
+        page_layout.addLayout(self.file_layout)
         page_layout.addLayout(image_layout)
 
         self.setLayout(page_layout)
@@ -141,5 +140,6 @@ class HomePage(QWidget):
             if self.edit_url.text()[-4:] == ".csv" or self.edit_url.text()[-5:] == ".xlsx":
                 self.main_window.open_file_page(self.edit_url.text())
 
-
-
+    def large_file(self):
+        self.bar = QProgressBar()
+        self.file_layout.addWidget(self.bar)
