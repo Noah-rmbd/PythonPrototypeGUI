@@ -338,7 +338,7 @@ class IATab(QWidget):
         self.learning_rate_combo.setPlaceholderText("Choose learning rate")
         self.learning_rate_combo.addItem("constant (default)")
         self.learning_rate_combo.addItem("invscaling")
-        self.learning_rate_combo.addItem("adaptative")
+        self.learning_rate_combo.addItem("adaptive")
         self.learning_rate_combo.currentIndexChanged.connect(self.MLP_criterion_update)
 
         ok_button = QPushButton("OK")
