@@ -1,3 +1,4 @@
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -6,16 +7,47 @@ from sklearn.decomposition import PCA
 
 import numpy as np
 import seaborn as sns
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 
-def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm_name, test_size):
+def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm_name, test_size,
+                          criterion_in='gini',
+                          neighbors_nb=5,
+                          tree_nb=100,
+                          mlp_solver='adam', mlp_learning_rate='constant', mlp_activation='relu'):
 
-    X_train, X_test, y_train, y_test = train_test_split(matrice_sans_label, label_array, test_size = test_size,
+    X_train, X_test, y_train, y_test = train_test_split(matrice_sans_label, label_array, test_size=test_size,
                                                         random_state=42)
-    classifier = classifier()  # instantiate the classifier
-    classifier.fit(X_train, y_train)
-    predictions = classifier.predict(X_test)
+
+    print(f"algo used: {classifier}")
+    print ("classifier:", classifier)
+
+    if classifier == "DecisionTreeClassifier":
+        classifier_obj = DecisionTreeClassifier(criterion=criterion_in)  # instantiate the classifier
+        print(f"\n criterion used: {criterion_in}")
+
+    elif classifier == "KNeighborsClassifier":
+        classifier_obj = KNeighborsClassifier(n_neighbors=neighbors_nb)  # instantiate the classifier
+        print(f"neighbors number = {neighbors_nb}")
+
+    elif classifier == "RandomForestClassifier":
+        classifier_obj = RandomForestClassifier(n_estimators=tree_nb)  # instantiate the classifier
+        print(f"number of trees = {tree_nb}")
+
+    elif classifier == "MLPClassifier":
+        classifier_obj = MLPClassifier(solver=mlp_solver, activation=mlp_activation, learning_rate=mlp_learning_rate)  # instantiate the classifier
+        print(f"solver = {mlp_solver}\n")
+        print(f"activation = {mlp_activation}\n")
+        print(f"learning rate = {mlp_learning_rate}\n")
+    else:
+        raise ValueError(f"Unknown classifier type: {classifier}")
+
+    classifier_obj.fit(X_train, y_train)
+    predictions = classifier_obj.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
+
     #print(f"{algorithm_name} Accuracy: {accuracy}")
 
     pca = PCA(n_components=2)
@@ -59,6 +91,8 @@ def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm
 
     canvas2 = heat_confusion_matrix(list(y_test), list(predictions))
 
+    print(f"algo used: {classifier} \n")
+    print("")
     return [canvas1, canvas2]
 
 
@@ -80,4 +114,3 @@ def heat_confusion_matrix(actual, predicted):
     plt.xlabel('Actual', fontsize=13)
     plt.title('Confusion Matrix', fontsize=17)
     return canvas2
-
