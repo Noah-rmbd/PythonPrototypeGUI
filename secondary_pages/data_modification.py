@@ -1,10 +1,11 @@
 from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 from sklearn.model_selection import train_test_split
+from components.dataframe_table import DataframeTable
 import pandas as pd
 import numpy as np
 
 class DataModification(QWidget):
-    def __init__(self, data_frame):
+    def __init__(self, data_frame, normal_visualization, next_step_bar):
         super().__init__()
 
         self.content_layout = QVBoxLayout()
@@ -17,14 +18,15 @@ class DataModification(QWidget):
         window_layout = QHBoxLayout()
 
         self.data_frame = data_frame
+        self.next_step_bar = next_step_bar
+        self.normal_visualization = normal_visualization
         self.data_frame_is_splited = False
         self.df_versions = []
         self.df_versions.append(self.data_frame.copy())
         self.df_index_current_version = 0
 
         self.label = QLabel("File Table")
-        self.table_widget = QTableWidget()
-        self.table_widget.cellChanged.connect(self.get_selected_item_position)
+        #self.table_widget.cellChanged.connect(self.get_selected_item_position)
         self.Showdata()
         self.insert_after = QPushButton("Insert column before")
 
@@ -51,8 +53,10 @@ class DataModification(QWidget):
         self.split_combo.addItem("40 %")
         self.split_combo.addItem("50 %")
 
+        self.combobox.setMaximumWidth(200)
         self.back_button.setMaximumWidth(200)
         self.save_changes.setMaximumWidth(200)
+        self.save_button.setMaximumWidth(200)
         self.delete_button.setMaximumWidth(200)
         self.normalize_button.setMaximumWidth(200)
         self.standardize_button.setMaximumWidth(200)
@@ -137,18 +141,10 @@ class DataModification(QWidget):
         for i in reversed(range(self.content_layout.count())):
             self.content_layout.itemAt(i).widget().setParent(None)
 
-        num_rows = len(self.data_frame.index)
-        num_cols = len(self.data_frame.columns)
-        self.table_widget.setColumnCount(num_cols)
-        self.table_widget.setRowCount(num_rows)
-        self.table_widget.setHorizontalHeaderLabels(self.data_frame.columns)
-
-        for i in range(num_rows):
-            for j in range(num_cols):
-                self.table_widget.setItem(i,j, QTableWidgetItem(str(self.data_frame.iat[i,j])))
-
-        self.table_widget.resizeColumnsToContents()
+        self.next_step_bar.show_loading("Refreshing table preview")
+        self.table_widget = DataframeTable(self.data_frame, self.next_step_bar.loading_bar)
         self.content_layout.addWidget(self.table_widget)
+        self.next_step_bar.hide_loading()
 
     def Showdata_splited(self, df_training, df_testing):
         for i in reversed(range(self.content_layout.count())):
@@ -157,32 +153,13 @@ class DataModification(QWidget):
         table_1_label = QLabel("Training data")
         table_2_label = QLabel("Testing data")
 
-        table_1 = QTableWidget()
-        table_2 = QTableWidget()
+        self.next_step_bar.show_loading("Training data preview")
+        table_1 = DataframeTable(df_training, self.next_step_bar.loading_bar)
+        self.next_step_bar.hide_loading()
 
-        num_rows1 = len(df_training.index)
-        num_cols1 = len(df_training.columns)
-
-        num_rows2 = len(df_testing.index)
-        num_cols2 = len(df_testing.columns)
-
-        table_1.setColumnCount(num_cols1)
-        table_2.setColumnCount(num_cols2)
-        table_1.setRowCount(num_rows1)
-        table_2.setRowCount(num_rows2)
-        table_1.setHorizontalHeaderLabels(df_training.columns)
-        table_2.setHorizontalHeaderLabels(df_training.columns)
-
-        for i in range(num_rows1):
-            for j in range(num_cols1):
-                table_1.setItem(i, j, QTableWidgetItem(str(df_training.iat[i,j])))
-
-        for i in range(num_rows2):
-            for j in range(num_cols2):
-                table_2.setItem(i, j, QTableWidgetItem(str(df_testing.iat[i,j])))
-
-        table_1.resizeColumnsToContents()
-        table_2.resizeColumnsToContents()
+        self.next_step_bar.show_loading("Testing data preview")
+        table_2 = DataframeTable(df_testing, self.next_step_bar.loading_bar)
+        self.next_step_bar.hide_loading()
 
         self.content_layout.addWidget(table_1_label)
         self.content_layout.addWidget(table_1)
@@ -190,6 +167,7 @@ class DataModification(QWidget):
         self.content_layout.addWidget(table_2)
 
     def split_data(self):
+        self.next_step_bar.show_status("Splitting data ...")
         test_size = float(self.split_combo.currentText()[:2]) / 100
         label = []
         nrow = len(self.data_frame.index)
@@ -211,22 +189,24 @@ class DataModification(QWidget):
 
         training_numpy = np.insert(self.X_train, 4, self.y_train, axis=1)
         testing_numpy = np.insert(self.X_test, 4, self.y_test, axis=1)
-        df_training = pd.DataFrame(training_numpy, columns=['sepal.length', 'sepal.width', 'petal.length', 'petal.width', 'variety'])
-        df_testing = pd.DataFrame(testing_numpy, columns=['sepal.length', 'sepal.width', 'petal.length', 'petal.width', 'variety'])
+        df_training = pd.DataFrame(training_numpy, columns=self.data_frame.columns)
+        df_testing = pd.DataFrame(testing_numpy, columns=self.data_frame.columns)
+
+        self.next_step_bar.hide_status()
         self.Showdata_splited(df_training, df_testing)
 
-
-
-
     def deleteColumn(self):
-        self.table_widget.cellChanged.disconnect(self.get_selected_item_position)
+        #self.table_widget.cellChanged.disconnect(self.get_selected_item_position, table_widget)
         col_to_delete = self.combobox.currentIndex()
         self.data_frame = self.data_frame.drop(self.data_frame.columns[col_to_delete], axis=1)
+        self.table_widget.removeColumn(col_to_delete)
+        print(col_to_delete)
         self.combobox.removeItem(col_to_delete)
-        self.Showdata()
-        self.table_widget.cellChanged.connect(self.get_selected_item_position)
+        #self.Showdata()
+        #self.table_widget.cellChanged.connect(self.get_selected_item_position)
 
         self.df_versions.append(self.data_frame.copy())
+        print(self.data_frame)
 
     def saveToCsv(self):
         path = QFileDialog.getSaveFileName(self, 'Save File', '/Users/noah-r/Downloads/')[0]
@@ -234,7 +214,7 @@ class DataModification(QWidget):
         self.data_frame.to_csv(path)
 
     def insertColumn(self):
-        self.table_widget.cellChanged.disconnect(self.get_selected_item_position)
+        #self.table_widget.cellChanged.disconnect(self.get_selected_item_position)
         col_to_insert = self.combobox.currentIndex()
         name = self.insert_name.text()
         if name not in self.data_frame.columns and name!='':
@@ -244,7 +224,7 @@ class DataModification(QWidget):
             self.Showdata()
         else:
             self.label.setText("Please choose a different name")
-        self.table_widget.cellChanged.connect(self.get_selected_item_position)
+        #self.table_widget.cellChanged.connect(self.get_selected_item_position)
 
         self.df_versions.append(self.data_frame.copy())
 
@@ -318,15 +298,16 @@ class DataModification(QWidget):
         print("Retour, voici valeur de data is splited : ",self.data_frame_is_splited)
         if self.data_frame_is_splited:
             self.unsplited_mode()
+            self.Showdata()
 
         if len(self.df_versions) > 1:
             self.df_versions.pop()
             self.data_frame = self.df_versions[-1].copy()
             self.Showdata()
+            print("Retour",self.data_frame)
 
         self.combobox.clear()
         self.combobox.addItems(list(self.data_frame.columns.values))
-        self.Showdata()
 
     def splited_mode(self):
         self.normalize_button.setEnabled(True)
@@ -355,4 +336,3 @@ class DataModification(QWidget):
 
         self.X_train, self.X_test, self.y_train, self.y_test = None, None, None, None
         self.data_frame_is_splited = False
-
