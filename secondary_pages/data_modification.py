@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QPushButton, QDialog, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QFileDialog, QLineEdit, QComboBox, QPushButton, QDialog, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, Normalizer
 from components.dataframe_table import DataframeTable
@@ -210,6 +210,8 @@ class DataModification(QWidget):
         self.data_frame.to_csv(path)
 
     def normalizeColumn(self):
+        print("Nothing")
+        '''
         col_names = self.data_frame.columns[:-1]
 
         for i in col_names:
@@ -231,6 +233,7 @@ class DataModification(QWidget):
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
         self.Showdata()
+        '''
 
     def mean(self, column):
         sum = 0
@@ -253,9 +256,9 @@ class DataModification(QWidget):
     def standardizeColumn(self):
         col_names = list(self.data_frame.columns)
         col_names.remove(self.label_col_name)
-        print(col_names)
-        print(self.label_col_name)
-        print(len(col_names))
+
+        self.next_step_bar.show_loading("Standardizing columns : ")
+
         for i in col_names:
             #transforme la colonne i du df en un array numpy de format (-1, 1)
             array = list(self.data_frame[i])
@@ -264,7 +267,9 @@ class DataModification(QWidget):
 
             #transforme la colonne i des données d'entrainnement du df en un array numpy de format (-1, 1)
             index_column_X = col_names.index(i) #get the index of the column in the X arrays
-            print(i, index_column_X)
+            self.next_step_bar.loading_bar.setValue(int(100*(index_column_X+1) / len(col_names)))
+            QApplication.processEvents()
+
             train_column = self.X_train[:, index_column_X] #get a numpy array of X training values
             train_column = train_column.reshape(-1, 1)
 
@@ -303,8 +308,10 @@ class DataModification(QWidget):
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
 
+        self.next_step_bar.hide_loading()
         #updates the table preview
         self.Showdata_splited(df_training, df_testing)
+
 
     def change_df_version(self):
         print("Retour, voici valeur de data is splited : ",self.data_frame_is_splited)
