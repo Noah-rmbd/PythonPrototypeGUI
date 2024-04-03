@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QFileDialog, QLineEdit, QComboBox, QPushButton, QDialog, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, Normalizer
 from components.dataframe_table import DataframeTable
 import pandas as pd
 import numpy as np
@@ -10,8 +11,7 @@ class DataModification(QWidget):
 
         self.content_layout = QVBoxLayout()
         menu_layout = QVBoxLayout()
-        selected_col_layout = QVBoxLayout()
-        add_col_layout = QVBoxLayout()
+        del_col_layout = QVBoxLayout()
         modify_col_layout = QVBoxLayout()
         split_layout = QHBoxLayout()
         export_changes_layout = QVBoxLayout()
@@ -26,20 +26,15 @@ class DataModification(QWidget):
         self.df_index_current_version = 0
 
         self.label = QLabel("File Table")
-        #self.table_widget.cellChanged.connect(self.get_selected_item_position)
         self.Showdata()
-        self.insert_after = QPushButton("Insert column before")
 
-        text_selected_col = QLabel("Selected column")
-        text_new_col = QLabel("New column name : ")
+        text_selected_col = QLabel("Delete column : ")
         text_selected_col.setMaximumHeight(20)
-        text_new_col.setMaximumHeight(20)
 
         self.insert_name = QLineEdit()
         self.index = 0
         self.combobox = QComboBox()
         self.combobox.addItems(list(self.data_frame.columns.values))
-        self.save_changes = QPushButton("Update graphs/tabs/..")
         self.save_button = QPushButton("Export to CSV")
         self.normalize_button = QPushButton("Normalize column")
         self.standardize_button = QPushButton("Standardize column")
@@ -55,7 +50,6 @@ class DataModification(QWidget):
 
         self.combobox.setMaximumWidth(200)
         self.back_button.setMaximumWidth(200)
-        self.save_changes.setMaximumWidth(200)
         self.save_button.setMaximumWidth(200)
         self.delete_button.setMaximumWidth(200)
         self.normalize_button.setMaximumWidth(200)
@@ -66,33 +60,27 @@ class DataModification(QWidget):
         self.delete_button.clicked.connect(self.deleteColumn)
         self.normalize_button.clicked.connect(self.normalizeColumn)
         self.standardize_button.clicked.connect(self.standardizeColumn)
-        self.insert_after.clicked.connect(self.insertColumn)
         self.save_button.clicked.connect(self.saveToCsv)
         self.back_button.clicked.connect(self.change_df_version)
         self.split_button.clicked.connect(self.split_data)
 
-        #self.content_layout.addWidget(self.label)
-        #self.content_layout.addWidget(self.table_widget)
-        selected_col_layout.addWidget(text_selected_col)
-        selected_col_layout.addWidget(self.combobox)
-        add_col_layout.addWidget(text_new_col)
-        add_col_layout.addWidget(self.insert_name)
-        add_col_layout.addWidget(self.insert_after)
-        add_col_layout.addWidget(self.delete_button)
+        del_col_layout.addWidget(text_selected_col)
+        del_col_layout.addWidget(self.combobox)
+        del_col_layout.addWidget(self.delete_button)
+
         modify_col_layout.addLayout(split_layout)
         split_layout.addWidget(self.split_button)
         split_layout.addWidget(self.split_combo)
         modify_col_layout.addWidget(self.normalize_button)
         modify_col_layout.addWidget(self.standardize_button)
         export_changes_layout.addWidget(self.back_button)
-        export_changes_layout.addWidget(self.save_changes)
         export_changes_layout.addWidget(self.save_button)
 
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
+        self.back_button.setEnabled(False)
 
-        menu_layout.addLayout(selected_col_layout)
-        menu_layout.addLayout(add_col_layout)
+        menu_layout.addLayout(del_col_layout)
         menu_layout.addLayout(modify_col_layout)
         menu_layout.addLayout(export_changes_layout)
 
@@ -168,65 +156,58 @@ class DataModification(QWidget):
 
     def split_data(self):
         self.next_step_bar.show_status("Splitting data ...")
-        test_size = float(self.split_combo.currentText()[:2]) / 100
-        label = []
-        nrow = len(self.data_frame.index)
 
-        for i in range(nrow):
-            label.append(
-                self.data_frame.iat[i, -1])  # -1 permet d'aller dans la denière colonne (où se trouve les labels)
+        #select the label column in a dialog window
+        label_dialog = LabelDialog(self.data_frame.columns)
+        result = label_dialog.exec()
 
-        label_array = np.array(label)  # Numpy array that contains labels
+        if result == QDialog.DialogCode.Accepted:
+            #create the label_index variable that will be used in data_analysis_tab
+            self.label_col_index = label_dialog.label_combo_box.currentIndex()
+            self.label_col_name = self.data_frame.columns[self.label_col_index]
 
-        data = self.data_frame.to_numpy()
-        data_without_label = data[:, :-1]  # Numpy array that contains data frame values without label
+            #get the size of the testing_dataframe
+            test_size = float(self.split_combo.currentText()[:2]) / 100
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(data_without_label, label_array, test_size=test_size,
-                                                            random_state=42)
+            #create a numpy array that contains the label column
+            label_array = self.data_frame[self.label_col_name].values
 
-        self.splited_mode()
-        self.split_button.setEnabled(False)
+            #create a numpy array that contains other columns of the df
+            data_without_label = self.data_frame.to_numpy()
+            data_without_label = np.delete(data_without_label, self.label_col_index, axis=1)
 
-        training_numpy = np.insert(self.X_train, 4, self.y_train, axis=1)
-        testing_numpy = np.insert(self.X_test, 4, self.y_test, axis=1)
-        df_training = pd.DataFrame(training_numpy, columns=self.data_frame.columns)
-        df_testing = pd.DataFrame(testing_numpy, columns=self.data_frame.columns)
+            #split data in four numpy arrays (train or test)*(content or label)
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(data_without_label, label_array, test_size=test_size,
+                                                                random_state=42)
 
-        self.next_step_bar.hide_status()
-        self.Showdata_splited(df_training, df_testing)
+            self.splited_mode() #disable other buttons and enable standardization and normalization buttons
+            self.back_button.setEnabled(True)
+
+            #create two numpy arrays that contains the training or testing dataframe, add to X values the label column at "label_index+1" position
+            training_numpy = np.insert(self.X_train, self.label_col_index, self.y_train, axis=1)
+            testing_numpy = np.insert(self.X_test, self.label_col_index, self.y_test, axis=1)
+
+            #convert the two numpy arrays in pandas dataframe
+            df_training = pd.DataFrame(training_numpy, columns=self.data_frame.columns)
+            df_testing = pd.DataFrame(testing_numpy, columns=self.data_frame.columns)
+
+            self.Showdata_splited(df_training, df_testing) #show the two dataframes
+        self.next_step_bar.hide_status()  # hide the working status alert
 
     def deleteColumn(self):
-        #self.table_widget.cellChanged.disconnect(self.get_selected_item_position, table_widget)
         col_to_delete = self.combobox.currentIndex()
         self.data_frame = self.data_frame.drop(self.data_frame.columns[col_to_delete], axis=1)
         self.table_widget.removeColumn(col_to_delete)
-        print(col_to_delete)
+
         self.combobox.removeItem(col_to_delete)
-        #self.Showdata()
-        #self.table_widget.cellChanged.connect(self.get_selected_item_position)
 
         self.df_versions.append(self.data_frame.copy())
-        print(self.data_frame)
+        self.back_button.setEnabled(True)
 
     def saveToCsv(self):
         path = QFileDialog.getSaveFileName(self, 'Save File', '/Users/noah-r/Downloads/')[0]
         path = path+'.csv'
         self.data_frame.to_csv(path)
-
-    def insertColumn(self):
-        #self.table_widget.cellChanged.disconnect(self.get_selected_item_position)
-        col_to_insert = self.combobox.currentIndex()
-        name = self.insert_name.text()
-        if name not in self.data_frame.columns and name!='':
-            self.label.setText("File Table")
-            self.data_frame.insert(col_to_insert, name, list(range(150)), True)
-            self.combobox.insertItem(col_to_insert, name)
-            self.Showdata()
-        else:
-            self.label.setText("Please choose a different name")
-        #self.table_widget.cellChanged.connect(self.get_selected_item_position)
-
-        self.df_versions.append(self.data_frame.copy())
 
     def normalizeColumn(self):
         col_names = self.data_frame.columns[:-1]
@@ -270,29 +251,60 @@ class DataModification(QWidget):
         return sd
 
     def standardizeColumn(self):
-        col_names = self.data_frame.columns[:-1]
-        print(self.data_frame)
+        col_names = list(self.data_frame.columns)
+        col_names.remove(self.label_col_name)
+        print(col_names)
+        print(self.label_col_name)
+        print(len(col_names))
         for i in col_names:
+            #transforme la colonne i du df en un array numpy de format (-1, 1)
             array = list(self.data_frame[i])
+            array = np.asarray(array)
+            array = array.reshape(-1, 1)
 
-            index_column = list(self.data_frame.columns).index(i)
-            train_column = self.X_train[:, index_column]
-            array_train = train_column.tolist()
-            print(array, array_train, "index", index_column)
+            #transforme la colonne i des données d'entrainnement du df en un array numpy de format (-1, 1)
+            index_column_X = col_names.index(i) #get the index of the column in the X arrays
+            print(i, index_column_X)
+            train_column = self.X_train[:, index_column_X] #get a numpy array of X training values
+            train_column = train_column.reshape(-1, 1)
 
-            mean = self.mean(array_train)
-            std_dev = self.sd(array_train)
+            test_column = self.X_test[:, index_column_X] #get a numpy array of X testing values
+            test_column = test_column.reshape(-1, 1)
 
-            standardized_arr = [(x - mean) / std_dev for x in array]
+            #create Sklearn scaler that uses standardization
+            scaler = StandardScaler()
+            #scaler = Normalizer()
 
+            scaler.fit(train_column)
+
+            standardized_arr = scaler.transform(array) #standardize the entire column of the df
+            standardized_train = scaler.transform(train_column) #standardize training values of the column
+            standardized_test = scaler.transform(test_column) #standardize testing values of the column
+
+            standardized_train = standardized_train.reshape(-1, ) #reshape these values so that they can fit in X_train
+            standardized_test = standardized_test.reshape(-1,) #reshape these values so that they can fit in X_test
+
+            #replace the original values by the standardized ones
             self.data_frame[i] = standardized_arr
+            self.X_train[:, index_column_X] = standardized_train
+            self.X_test[:, index_column_X] = standardized_test
 
+        #save the new version of the df
         self.df_versions.append(self.data_frame.copy())
-        self.split_data()
+
+        training_numpy = np.insert(self.X_train, self.label_col_index, self.y_train, axis=1)
+        testing_numpy = np.insert(self.X_test, self.label_col_index, self.y_test, axis=1)
+
+        # convert the two numpy arrays in pandas dataframe
+        df_training = pd.DataFrame(training_numpy, columns=self.data_frame.columns)
+        df_testing = pd.DataFrame(testing_numpy, columns=self.data_frame.columns)
+
+        #disable the normalization and standardization buttons
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
-        self.Showdata()
 
+        #updates the table preview
+        self.Showdata_splited(df_training, df_testing)
 
     def change_df_version(self):
         print("Retour, voici valeur de data is splited : ",self.data_frame_is_splited)
@@ -300,11 +312,17 @@ class DataModification(QWidget):
             self.unsplited_mode()
             self.Showdata()
 
+            if len(self.df_versions) == 1:
+                self.back_button.setEnabled(False)
+
         if len(self.df_versions) > 1:
             self.df_versions.pop()
             self.data_frame = self.df_versions[-1].copy()
             self.Showdata()
             print("Retour",self.data_frame)
+
+            if len(self.df_versions) == 1:
+                self.back_button.setEnabled(False)
 
         self.combobox.clear()
         self.combobox.addItems(list(self.data_frame.columns.values))
@@ -312,12 +330,11 @@ class DataModification(QWidget):
     def splited_mode(self):
         self.normalize_button.setEnabled(True)
         self.standardize_button.setEnabled(True)
-        self.insert_after.setEnabled(False)
         self.delete_button.setEnabled(False)
         self.insert_name.setEnabled(False)
         self.combobox.setEnabled(False)
         self.split_combo.setEnabled(False)
-        self.save_changes.setEnabled(False)
+        self.split_button.setEnabled(False)
         self.normalize_button.setEnabled(True)
         self.standardize_button.setEnabled(True)
 
@@ -326,13 +343,32 @@ class DataModification(QWidget):
     def unsplited_mode(self):
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
-        self.insert_after.setEnabled(True)
         self.delete_button.setEnabled(True)
         self.insert_name.setEnabled(True)
         self.combobox.setEnabled(True)
         self.split_combo.setEnabled(True)
-        self.save_changes.setEnabled(True)
         self.split_button.setEnabled(True)
 
         self.X_train, self.X_test, self.y_train, self.y_test = None, None, None, None
         self.data_frame_is_splited = False
+
+class LabelDialog(QDialog):
+    def __init__(self, list_columns):
+        super().__init__()
+
+        texte = QLabel("Selectionnez la colonne à prédire :")
+
+        # Créer une QComboBox
+        self.label_combo_box = QComboBox()
+        self.label_combo_box.addItems(list_columns)
+
+        # Créer un bouton "OK"
+        self.button = QPushButton('OK')
+        self.button.clicked.connect(self.accept)
+
+        # Créer un layout vertical et ajouter la QComboBox et le bouton
+        layout = QVBoxLayout()
+        layout.addWidget(texte)
+        layout.addWidget(self.label_combo_box)
+        layout.addWidget(self.button)
+        self.setLayout(layout)
