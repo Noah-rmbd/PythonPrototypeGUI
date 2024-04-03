@@ -54,33 +54,21 @@ class Window(QMainWindow):
 
         if file_url[-4:] == ".csv":
             self.data_frame = pd.read_csv(file_url)
+        elif file_url[-8:] == ".parquet":
+            self.data_frame = pd.read_parquet(file_url)
         else:
             self.data_frame = pd.read_excel(file_url)
 
-        if len(self.data_frame.index) >= 1000:
-            #if the file is too large, home_page will get a loading bar to inform user
-            question = QMessageBox.question(
-                self,
-                'Confirmation',
-                "Souhaitez-vous l'intégralité des fonctionnalités ? (cette opération peut prendre du temps)",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-            )
-            if question == QMessageBox.StandardButton.Yes:
-                self.home_page.large_file()
-                self.file_page = FileWindow(self.data_frame, self.home_page.bar, True)
-            else:
-                self.home_page.large_file()
-                self.file_page = FileWindow(self.data_frame, self.home_page.bar, False)
 
-        else: #else there is no bar
-            self.file_page = FileWindow(self.data_frame, None, True)
+        self.home_page.large_file() #this function generates a loading bar
+        self.file_page = FileWindow(self.data_frame, self.home_page.bar, True)
 
         self.stacked_pages.addWidget(self.file_page)
         self.stacked_pages.setCurrentIndex(1)
 
     def open_new_file(self):
         fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/',
-                                            'CSV, XLSX files (*.csv *.xlsx)')
+                                            'CSV, XLSX, Parquet files (*.csv *.xlsx *.parquet)')
         if fname != ('', ''):
             file_url = fname[0]
             self.open_file_page(file_url)
