@@ -6,6 +6,7 @@ from secondary_pages.data_visualization import DataVisualization
 from secondary_pages.data_modification import DataModification
 from secondary_pages.data_analysis_tab import FenData
 from secondary_pages.IA_tab import IATab
+from secondary_pages.feature_PCA import FenPCA
 
 from components.progress_bar import ProgressBar
 from components.next_step_bar import NextStepBar
@@ -45,63 +46,80 @@ class FileWindow(QWidget):
         self.setLayout(layout)
 
     def switch_step(self):
-        if self.nbr_step == 0:
-            self.data_modification = DataModification(self.data_frame, self.normal_visualization, self.next_step_bar)
-            self.data_modification.split_button.clicked.connect(self.enable_button)
-            self.data_modification.back_button.clicked.connect(self.disable_button)
+        try:
+            if self.nbr_step == 0:
+                self.data_modification = DataModification(self.data_frame, self.normal_visualization, self.next_step_bar)
+                self.data_modification.split_button.clicked.connect(self.enable_button)
+                self.data_modification.back_button.clicked.connect(self.disable_button)
 
-            self.content_layout.addWidget(self.data_modification)
+                self.content_layout.addWidget(self.data_modification)
 
-            self.nbr_step += 1
-            self.progress_bar.step2_button.setEnabled(True)
-            self.next_step_bar.next_button.setEnabled(False)
-            self.content_layout.setCurrentIndex(self.nbr_step)
+                self.nbr_step += 1
+                self.progress_bar.step2_button.setEnabled(True)
+                self.next_step_bar.next_button.setEnabled(False)
+                self.content_layout.setCurrentIndex(self.nbr_step)
 
-            self.next_step_bar.prev_button.show()
+                self.next_step_bar.prev_button.show()
 
-        elif self.nbr_step == 1:
-            self.data_frame = self.data_modification.data_frame
-            self.data_frame_splited = [self.data_modification.X_train, self.data_modification.X_test,
-                                       self.data_modification.y_train, self.data_modification.y_test]
-            self.percentage_splited = int(self.data_modification.split_combo.currentText()[:2]) / 100
+            elif self.nbr_step == 1:
+                self.data_frame = self.data_modification.data_frame
+                self.data_frame_splited = [self.data_modification.X_train, self.data_modification.X_test,
+                                           self.data_modification.y_train, self.data_modification.y_test]
+                self.percentage_splited = int(self.data_modification.split_combo.currentText()[:2]) / 100
 
-            self.data_analysis = FenData(self.data_frame)
-            self.content_layout.addWidget(self.data_analysis)
+                self.data_analysis = FenData(self.data_frame)
+                self.content_layout.addWidget(self.data_analysis)
 
-            self.nbr_step += 1
-            self.progress_bar.step3_button.setEnabled(True)
-            self.content_layout.setCurrentIndex(self.nbr_step)
+                self.nbr_step += 1
+                self.progress_bar.step3_button.setEnabled(True)
+                self.content_layout.setCurrentIndex(self.nbr_step)
 
-            print(self.percentage_splited)
+                print(self.percentage_splited)
 
-        elif self.nbr_step == 2:
-            self.data_training = IATab(self.data_frame)
-            self.content_layout.addWidget(self.data_training)
 
-            self.nbr_step += 1
-            self.progress_bar.step4_button.setEnabled(True)
-            self.content_layout.setCurrentIndex(self.nbr_step)
+            elif self.nbr_step == 2:  # FENETRE AVEC GRAPH PCA
+                self.pca_selection = FenPCA(self.data_frame)
+                self.content_layout.addWidget(self.pca_selection) #CE QUI EST AFFICHE DANS LE CADRE PRINCIPAL DE LA FENETRE
 
+                self.nbr_step += 1
+                self.progress_bar.step4_button.setEnabled(True)
+                self.content_layout.setCurrentIndex(self.nbr_step)
+
+            elif self.nbr_step == 3:
+                self.data_training = IATab(self.data_frame_splited)
+                self.content_layout.addWidget(self.data_training)
+
+                self.nbr_step += 1
+                self.progress_bar.step5_button.setEnabled(True)
+                self.content_layout.setCurrentIndex(self.nbr_step)
+        except Exception as e:
+            print(f"Exeption in switch_step: {e}")
 
     def previous_step(self):
-        if self.nbr_step == 1:
-            self.content_layout.removeWidget(self.data_modification)
+        try:
+            if self.nbr_step == 1:
+                self.content_layout.removeWidget(self.data_modification)
 
-            self.progress_bar.step2_button.setEnabled(False)
-            self.next_step_bar.next_button.setEnabled(True)
-            self.next_step_bar.prev_button.hide()
+                self.progress_bar.step2_button.setEnabled(False)
+                self.next_step_bar.next_button.setEnabled(True)
+                self.next_step_bar.prev_button.hide()
 
-        elif self.nbr_step == 2:
-            self.content_layout.removeWidget(self.data_analysis)
-            self.progress_bar.step3_button.setEnabled(False)
+            elif self.nbr_step == 2:
+                self.content_layout.removeWidget(self.data_analysis)
+                self.progress_bar.step3_button.setEnabled(False)
 
-        elif self.nbr_step == 3:
-            self.content_layout.removeWidget(self.data_training)
-            self.progress_bar.step4_button.setEnabled(False)
+            elif self.nbr_step == 3:
+                self.content_layout.removeWidget(self.pca_selection)
+                self.progress_bar.step4_button.setEnabled(False)
 
-        self.nbr_step -= 1
-        self.content_layout.setCurrentIndex(self.nbr_step)
+            elif self.nbr_step == 4:
+                self.content_layout.removeWidget(self.data_training)
+                self.progress_bar.step5_button.setEnabled(False)
 
+            self.nbr_step -= 1
+            self.content_layout.setCurrentIndex(self.nbr_step)
+        except Exception as e:
+            print(f"Exeption in previous_step: {e}")
     def disable_button(self):
         self.next_step_bar.next_button.setEnabled(False)
 
