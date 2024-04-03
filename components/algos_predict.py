@@ -12,14 +12,11 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 
-def plot_algorithm_result(classifier, matrice_sans_label, label_array, algorithm_name, test_size,
+def plot_algorithm_result(classifier,  X_train, X_test, y_train, y_test, algorithm_name,
                           criterion_in='gini',
                           neighbors_nb=5,
                           tree_nb=100,
                           mlp_solver='adam', mlp_learning_rate='constant', mlp_activation='relu'):
-
-    X_train, X_test, y_train, y_test = train_test_split(matrice_sans_label, label_array, test_size=test_size,
-                                                        random_state=42)
 
     print(f"algo used: {classifier}")
     print ("classifier:", classifier)
