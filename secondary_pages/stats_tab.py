@@ -4,15 +4,12 @@ import numpy as np
 
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 
 class StatsTab(QWidget):
     def __init__(self, data_frame, normal_visualization):
-        print("Voici le bool light_mode des statistiques", normal_visualization)
         super().__init__()
         tab = QVBoxLayout()
-        title = QLabel("Stats")
 
         self.data_frame = data_frame
         name_cols = list(self.data_frame.columns)
@@ -43,7 +40,7 @@ class StatsTab(QWidget):
 
         if normal_visualization:
             # statistics aren't calculated with light mode
-            self.calculate_statistics(index_float_cols)
+            self.calculate_statistics(index_float_cols, name_cols)
 
         fig, ax = plt.subplots(figsize=(100, 100))
 
@@ -51,7 +48,7 @@ class StatsTab(QWidget):
 
         # Store heatmap object in a variable to easily access it when you want to include more features (such as title).
         # Set the range of values to be displayed on the colormap from -1 to 1, and set the annotation to True to display the correlation values on the heatmap.
-        heatmap = sns.heatmap(self.data_frame.corr(), vmin=-1, vmax=1, annot=normal_visualization)
+        heatmap = sns.heatmap(self.data_frame.corr(), vmin=-1, vmax=1, annot=len(name_cols)<=15)
         # Give a title to the heatmap. Pad defines the distance of the title from the top of the heatmap.
         heatmap.set_title('Correlation Heatmap from stats', fontdict={'fontsize': 12}, pad=12)
 
@@ -63,39 +60,22 @@ class StatsTab(QWidget):
 
         self.setLayout(tab)
 
-    def calculate_statistics(self, index_cols):
+    def calculate_statistics(self, index_cols, name_cols):
         number_of_cols = len(index_cols)
         means = []
         sd = []
-        print(index_cols)
-        for i in range(number_of_cols):
-            #print("Calculate the mean of", list(self.data_frame.columns)[index_cols[i]], " : ", 2*i+1, "/", 2*number_of_cols)
-            means.append(self.mean(index_cols[i]))
-            #print("Calculate the sd of", list(self.data_frame.columns)[index_cols[i]], " : ", 2*i+2, "/", 2*number_of_cols)
-            sd.append(self.sd(index_cols[i], means[i]))
+        num_rows = len(self.data_frame.index)
+        for i in range(len(name_cols)):
+            #converts column into numpy array
+            array = np.array(self.data_frame[name_cols[i]].values)
+
+            #calculate mean and sd of the column
+            means.append(self.data_frame[name_cols[i]].sum()/num_rows)
+            sd.append(np.std(array))
+
+            #add these values to the stats table
             self.stats_widget.setItem(0, i, QTableWidgetItem(str(round(means[i], 4))))
             self.stats_widget.setItem(1, i, QTableWidgetItem(str(round(sd[i], 4))))
-
-    def mean(self, column):
-        sum = 0
-        num_rows = len(self.data_frame.index)
-
-        for i in range(0, num_rows):
-            #print(i)
-            sum += float(self.data_frame.iat[i, column])
-
-        mean = sum/num_rows
-        return mean
-
-    def sd(self, column, mean):
-        num_rows = len(self.data_frame.index)
-        sum = 0
-        for i in range(0, num_rows):
-            sum += abs(float(self.data_frame.iat[i, column])-mean)
-
-        sd = sum/num_rows
-        sd = pow(sd, 1/2)
-        return sd
 
     def is_float(self, input_str):
         try:
