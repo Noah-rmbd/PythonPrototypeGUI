@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QFileDialog, QLineEdit, QComboBox, QPushButton, QDialog, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, Normalizer
+from sklearn.preprocessing import StandardScaler, Normalizer, MinMaxScaler
 from components.dataframe_table import DataframeTable
 import pandas as pd
 import numpy as np
@@ -163,8 +163,9 @@ class DataModification(QWidget):
 
         if result == QDialog.DialogCode.Accepted:
             #create the label_index variable that will be used in data_analysis_tab
-            self.label_col_index = label_dialog.label_combo_box.currentIndex()
-            self.label_col_name = self.data_frame.columns[self.label_col_index]
+            self.label_col_name = label_dialog.label_combo_box.currentText()#self.data_frame.columns[-self.label_col_index]
+            self.label_col_index = list(self.data_frame.columns).index(self.label_col_name)  # label_dialog.label_combo_box.currentIndex()
+            print(self.label_col_index, self.label_col_name)
 
             #get the size of the testing_dataframe
             test_size = float(self.split_combo.currentText()[:2]) / 100
@@ -210,91 +211,53 @@ class DataModification(QWidget):
         self.data_frame.to_csv(path)
 
     def normalizeColumn(self):
-        print("Nothing")
-        '''
-        col_names = self.data_frame.columns[:-1]
-
-        for i in col_names:
-            array = list(self.data_frame[i])
-            index_column = list(self.data_frame.columns).index(i)
-            train_column = self.X_train[:, index_column]
-            list_train = train_column.tolist()
-
-            min_val = min(list_train)
-            max_val = max(list_train)
-
-            # Normalize the data
-            normalized_arr = [(x - min_val) / (max_val - min_val) for x in array]
-
-            self.data_frame[i] = normalized_arr
-        self.df_versions.append(self.data_frame.copy())
-        self.split_data()
-
-        self.normalize_button.setEnabled(False)
-        self.standardize_button.setEnabled(False)
-        self.Showdata()
-        '''
-
-    def mean(self, column):
-        sum = 0
-        num_rows = len(column)
-        for i in column:
-            sum += float(i)
-        mean = sum/num_rows
-        return mean
-
-    def sd(self, column):
-        mean = self.mean(column)
-        num_rows = len(column)
-        sum = 0
-        for i in column:
-            sum += abs(float(i-mean))
-        sd = sum/num_rows
-        sd = pow(sd, 1/2)
-        return sd
+        self.df_scaler(MinMaxScaler())
 
     def standardizeColumn(self):
+        self.df_scaler(StandardScaler())
+
+    def df_scaler(self, scaler):
         col_names = list(self.data_frame.columns)
         col_names.remove(self.label_col_name)
 
         self.next_step_bar.show_loading("Standardizing columns : ")
 
         for i in col_names:
-            #transforme la colonne i du df en un array numpy de format (-1, 1)
+            # transforme la colonne i du df en un array numpy de format (-1, 1)
             array = list(self.data_frame[i])
             array = np.asarray(array)
             array = array.reshape(-1, 1)
 
-            #transforme la colonne i des données d'entrainnement du df en un array numpy de format (-1, 1)
-            index_column_X = col_names.index(i) #get the index of the column in the X arrays
-            self.next_step_bar.loading_bar.setValue(int(100*(index_column_X+1) / len(col_names)))
+            # transforme la colonne i des données d'entrainnement du df en un array numpy de format (-1, 1)
+            index_column_X = col_names.index(i)  # get the index of the column in the X arrays
+            self.next_step_bar.loading_bar.setValue(int(100 * (index_column_X + 1) / len(col_names)))
             QApplication.processEvents()
 
-            train_column = self.X_train[:, index_column_X] #get a numpy array of X training values
+            train_column = self.X_train[:, index_column_X]  # get a numpy array of X training values
             train_column = train_column.reshape(-1, 1)
 
-            test_column = self.X_test[:, index_column_X] #get a numpy array of X testing values
+            test_column = self.X_test[:, index_column_X]  # get a numpy array of X testing values
             test_column = test_column.reshape(-1, 1)
 
-            #create Sklearn scaler that uses standardization
-            scaler = StandardScaler()
-            #scaler = Normalizer()
+            # create Sklearn scaler that uses standardization
+            scaler = scaler
 
             scaler.fit(train_column)
 
-            standardized_arr = scaler.transform(array) #standardize the entire column of the df
-            standardized_train = scaler.transform(train_column) #standardize training values of the column
-            standardized_test = scaler.transform(test_column) #standardize testing values of the column
+            standardized_arr = scaler.transform(array)  # standardize the entire column of the df
+            standardized_train = scaler.transform(train_column)  # standardize training values of the column
+            standardized_test = scaler.transform(test_column)  # standardize testing values of the column
 
-            standardized_train = standardized_train.reshape(-1, ) #reshape these values so that they can fit in X_train
-            standardized_test = standardized_test.reshape(-1,) #reshape these values so that they can fit in X_test
+            standardized_train = standardized_train.reshape(
+                -1, )  # reshape these values so that they can fit in X_train
+            standardized_test = standardized_test.reshape(-1, )  # reshape these values so that they can fit in X_test
 
-            #replace the original values by the standardized ones
+            # replace the original values by the standardized ones
             self.data_frame[i] = standardized_arr
             self.X_train[:, index_column_X] = standardized_train
             self.X_test[:, index_column_X] = standardized_test
 
-        #save the new version of the df
+        # save the new version of the df
         self.df_versions.append(self.data_frame.copy())
 
         training_numpy = np.insert(self.X_train, self.label_col_index, self.y_train, axis=1)
@@ -304,12 +267,12 @@ class DataModification(QWidget):
         df_training = pd.DataFrame(training_numpy, columns=self.data_frame.columns)
         df_testing = pd.DataFrame(testing_numpy, columns=self.data_frame.columns)
 
-        #disable the normalization and standardization buttons
+        # disable the normalization and standardization buttons
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
 
         self.next_step_bar.hide_loading()
-        #updates the table preview
+        # updates the table preview
         self.Showdata_splited(df_training, df_testing)
 
 
@@ -367,6 +330,10 @@ class LabelDialog(QDialog):
 
         # Créer une QComboBox
         self.label_combo_box = QComboBox()
+        print(list_columns)
+        list_columns = list(list_columns)
+        list_columns.reverse()
+        print(list_columns)
         self.label_combo_box.addItems(list_columns)
 
         # Créer un bouton "OK"
