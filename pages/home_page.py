@@ -82,6 +82,13 @@ class HomePage(QWidget):
         description = QLabel("Upload the file you would like to open")
         description.setMaximumHeight(100)
 
+        #WARNING:
+        warning = QLabel("Attention, les données importées doivent être labellisées")
+        warning.setStyleSheet("font-weight: bold; color: red;")
+        font_warning = QFont("Helvetica Neue", 20)
+        warning.setFont(font_warning)
+        warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         # edit_url widget
         self.edit_url = QLineEdit("")
         self.edit_url.setMaximumHeight(80)
@@ -116,6 +123,7 @@ class HomePage(QWidget):
         ##########################################
         page_layout.addWidget(title)
         ##########################################
+        self.file_layout.addWidget(warning)
         self.file_layout.addWidget(drag_and_drop)
         label = QLabel("Vous pouvez aussi copier l'url:")
         self.file_layout.addWidget(label)
