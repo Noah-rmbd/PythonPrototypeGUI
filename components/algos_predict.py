@@ -12,11 +12,12 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 
-def plot_algorithm_result(classifier,  X_train, X_test, y_train, y_test, algorithm_name,
+def plot_algorithm_result(classifier, X_train, y_train, X_test, y_test, algorithm_name, test_size,
                           criterion_in='gini',
                           neighbors_nb=5,
                           tree_nb=100,
                           mlp_solver='adam', mlp_learning_rate='constant', mlp_activation='relu'):
+
 
     print(f"algo used: {classifier}")
     print ("classifier:", classifier)
@@ -103,9 +104,9 @@ def heat_confusion_matrix(actual, predicted):
     sns.heatmap(cm,
                 annot=True,
                 fmt='g',
-                xticklabels=['Setosa', 'Versicolor', 'Virginica'],
-                yticklabels=['Setosa', 'Versicolor', 'Virginica']
-                )
+                xticklabels=np.unique(predicted),
+                yticklabels=np.unique(predicted))
+
 
     plt.ylabel('Prediction', fontsize=13)
     plt.xlabel('Actual', fontsize=13)
