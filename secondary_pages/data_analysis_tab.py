@@ -1,20 +1,17 @@
-import numpy as np
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QDoubleValidator
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton
-from components.next_step_bar import NextStepBar
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QApplication
 import pandas as pd
-from sklearn.decomposition import PCA
 from sklearn.feature_selection import mutual_info_classif
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-import sys
 
 class FenData(QWidget):
     def __init__(self, dataframe_columns, dataframe_splited, next_step_bar, j_in=None):
         super().__init__()
         next_step_bar.show_status("Calculating info classifier")
+        QApplication.processEvents()
 
         self.j = j_in
         self.seuil_value = None
@@ -102,9 +99,10 @@ class FenData(QWidget):
                 self.index_features_to_del.sort(reverse=True)
                 print("Voila les features à supprimer", name_features_to_del, self.index_features_to_del)
                 self.print_seuil()
+                self.drop_features_button.setEnabled(False)
 
             except Exception as e:
-                print (f"exeption in drop features: {e}")
+                print(f"exeption in drop features: {e}")
 
     def highlight_features(self, event):
         self.save_seuil()
