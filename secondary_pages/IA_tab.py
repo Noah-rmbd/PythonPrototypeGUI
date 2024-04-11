@@ -3,7 +3,6 @@ from PyQt6.QtWidgets import *
 #from secondary_pages.graphs_tab import FenGraph
 #from secondary_pages.table_tab import TableTab
 import pandas as pd
-from sklearn import metrics
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -16,21 +15,14 @@ import sys
 
 
 class IATab(QWidget):
-    def __init__(self, dataframe_splited_in):
+    def __init__(self, dataframe_splited):
         super().__init__()
-        self.dataframe = dataframe_splited_in #le dataframe est désormais décomposé en 4 parties: X_train, X_test, Y_train et Y_test, suite à la data_modification
+        self.dataframe_splited = dataframe_splited
 
-        # self.dataframe = pd.read_csv(r'C:\Louis\Cours\Projet Peip2\PythonPrototypeGUI-main(3)\PythonPrototypeGUI-main\iris.csv')
-        label = []
-
-        #nrow = len(self.dataframe.index)
-        # for i in range(nrow):
-        #     label.append(
-        #         self.dataframe.iat[i, -1])  # -1 permet d'aller dans la denière colonne (où se trouve les labels)
-
-        # self.label_array = np.array(label)
-        # matrice = self.dataframe.to_numpy()
-        # self.matrice_sans_label = matrice[:, :-1]
+        self.X_train = self.dataframe_splited[0]
+        self.X_test = self.dataframe_splited[1]
+        self.y_train = self.dataframe_splited[2]
+        self.y_test = self.dataframe_splited[3]
 
         self.algo_type_combo = QComboBox(self)
         self.algo_type_combo.addItem("Choisissez un algorithme")
@@ -58,6 +50,15 @@ class IATab(QWidget):
         # Set the font for the QLabel
         label.setFont(font)
 
+        text_test_size = QLabel("Select the percentage of items used for testing model :")
+
+        self.test_size_box = QComboBox()
+        self.test_size_box.setMaximumWidth(100)
+        self.test_size_box.addItem("20 %")
+        self.test_size_box.addItem("30 %")
+        self.test_size_box.addItem("40 %")
+        self.test_size_box.addItem("50 %")
+
         ############ Variables pour hyperparamètres #####################
         self.criterian_combo = QComboBox()
         self.criterian_combo.addItem("Gini (default)")
@@ -73,6 +74,7 @@ class IATab(QWidget):
         self.actual_criterion = "gini"
         self.mlp_activation = "relu"
         self.learning_rate = "constant"
+
 
         ##################################################################
 
@@ -96,10 +98,10 @@ class IATab(QWidget):
         self.main_layout.addWidget(self.algo_type_combo)
         self.main_layout.addWidget(self.plot_button)
         self.main_layout.addWidget(self.update_hyperparameter_button)
-        #test_size_layout = QHBoxLayout()
-        #test_size_layout.addWidget(text_test_size)
-        #test_size_layout.addWidget(self.test_size_box)
-        #self.main_layout.addLayout(test_size_layout)
+        test_size_layout = QHBoxLayout()
+        test_size_layout.addWidget(text_test_size)
+        test_size_layout.addWidget(self.test_size_box)
+        self.main_layout.addLayout(test_size_layout)
         # main_layout.addLayout(bouton_layout)
 
         self.setLayout(self.main_layout)
@@ -146,9 +148,16 @@ class IATab(QWidget):
             self.table_widget.setItem(row, 1, QTableWidgetItem(f"{value:.4f}"))
 
     def plot_cart(self):
+        test_size = float(self.test_size_box.currentText()[:2]) / 100
+        # if self.actual_criterion is not None:
+        #     cart_classifier = DecisionTreeClassifier(criterion=self.actual_criterion)
+        #     print("used criterion:", self.actual_criterion)
+        # else:
+        #     # Default to KNeighborsClassifier with default parameters
+        #     cart_classifier = DecisionTreeClassifier()
+        #     print("used criterion: default")
 
-
-        canvas = plot_algorithm_result("DecisionTreeClassifier", self.dataframe[0], self.dataframe[1],self.dataframe[2],self.dataframe[3],"Cart Algorithm",
+        canvas = plot_algorithm_result("DecisionTreeClassifier", self.X_train, self.y_train, self.X_test, self.y_test, "Cart Algorithm", test_size,
                                        criterion_in= self.actual_criterion)
         for i in reversed(range(self.canvas_layout.count())):
             self.canvas_layout.itemAt(i).widget().setParent(None)
@@ -158,6 +167,8 @@ class IATab(QWidget):
 
 
     def plot_KNN(self):
+        test_size = float(self.test_size_box.currentText()[:2]) / 100
+
         # # Check if self.k_value_as_int is not None and greater than 0 before creating the classifier
         # if self.k_value_as_int is not None and self.k_value_as_int > 0:
         #     knn_classifier = KNeighborsClassifier(n_neighbors=self.k_value_as_int)
@@ -165,7 +176,7 @@ class IATab(QWidget):
         #     # Default to KNeighborsClassifier with default parameters
         #     knn_classifier = KNeighborsClassifier()
 
-        canvas = plot_algorithm_result("KNeighborsClassifier", self.dataframe[0], self.dataframe[1],self.dataframe[2],self.dataframe[3], "KNN Algorithm",
+        canvas = plot_algorithm_result("KNeighborsClassifier", self.X_train, self.y_train, self.X_test, self.y_test, "KNN Algorithm", test_size,
                                        neighbors_nb= self.k_value_as_int)
         for i in reversed(range(self.canvas_layout.count())):
             self.canvas_layout.itemAt(i).widget().setParent(None)
@@ -174,7 +185,9 @@ class IATab(QWidget):
         self.canvas_layout.addWidget(canvas[1])
 
     def plot_random_forest(self):
-        canvas = plot_algorithm_result("RandomForestClassifier",self.dataframe[0], self.dataframe[1],self.dataframe[2],self.dataframe[3],"Random Forest Algorithm",
+        test_size = float(self.test_size_box.currentText()[:2]) / 100
+        canvas = plot_algorithm_result("RandomForestClassifier", self.X_train, self.y_train, self.X_test, self.y_test,
+                              "Random Forest Algorithm", test_size,
                                 tree_nb=self.tree_value_as_int, criterion_in=self.actual_criterion)
 
         for i in reversed(range(self.canvas_layout.count())):
@@ -184,9 +197,10 @@ class IATab(QWidget):
         self.canvas_layout.addWidget(canvas[1])
 
     def plot_MLP(self):
-        canvas = plot_algorithm_result("MLPClassifier", self.dataframe[0], self.dataframe[1],self.dataframe[2],self.dataframe[3], "MLP algorithm",
+        test_size = float(self.test_size_box.currentText()[:2]) / 100
+        canvas = plot_algorithm_result("MLPClassifier", self.X_train, self.y_train, self.X_test, self.y_test,
+                              "MLP algorithm", test_size,
                               mlp_solver= self.solver_type, mlp_learning_rate= self.learning_rate, mlp_activation=self.mlp_activation)
-
         for i in reversed(range(self.canvas_layout.count())):
             self.canvas_layout.itemAt(i).widget().setParent(None)
 
