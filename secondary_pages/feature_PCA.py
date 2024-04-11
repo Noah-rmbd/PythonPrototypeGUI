@@ -13,18 +13,20 @@ import sys
 
 
 class FenPCA(QWidget):
-    def __init__(self):
+    def __init__(self, dataframe_splited):
         super().__init__()
 
-        self.dataframe = pd.read_csv(r'C:\Louis\Cours\Projet Peip2\PythonPrototypeGUI-main(3)\PythonPrototypeGUI-main\iris.csv')
+        self.dataframe_splited = dataframe_splited
 
         # Séparer les caractéristiques des labels
-        X = self.dataframe.iloc[:, :-1]
-        y = self.dataframe.iloc[:, -1]
+        self.X_train = self.dataframe_splited[0]
+        self.X_test = self.dataframe_splited[1]
+
+        print(self.X_train, self.X_test)
 
         # Appliquer l'algorithme PCA sur les caractéristiques
         pca = PCA()
-        pca.fit(X)
+        pca.fit(self.X_train)
 
         # Créer la figure matplotlib
         self.figure = plt.figure()
@@ -71,22 +73,19 @@ class FenPCA(QWidget):
 
             # Appliquer l'algorithme PCA sur les caractéristiques en conservant le pourcentage d'information sélectionné
             pca = PCA(n_components=pct_variance_to_keep)
-            X_pca = pca.fit_transform(self.dataframe.iloc[:, :-1])
+            self.X_train = pca.fit_transform(self.X_train)
+            self.X_test = pca.fit_transform(self.X_test)
+
+            print("X_train_pca", self.X_train)
+            print("X_test_pca", self.X_test)
+
 
             # Concaténer les composantes principales avec les labels
-            self.dataframe_pca = pd.concat([pd.DataFrame(X_pca), self.dataframe.iloc[:, -1]], axis=1)
+            #self.dataframe_pca = pd.concat([pd.DataFrame(X_pca), self.dataframe.iloc[:, -1]], axis=1)
 
             # Afficher les résultats
-            print("Dataframe après application de la PCA :")
-            print(self.dataframe_pca.head())
+            #print("Dataframe après application de la PCA :")
+            #print(self.dataframe_pca.head())
 
         except Exception as e:
             print(f'exeption in apply_pca : {e}')
-
-try:
-    app = QApplication([])
-    window = FenPCA()
-    window.show()
-    sys.exit(app.exec())
-except Exception as e:
-    print(f"Exeption: {e}")
