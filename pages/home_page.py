@@ -54,14 +54,14 @@ class DragAndDrop(QPushButton):
             event.accept()
 
             #print(event.mimeData().urls())
-            if self.file_path[-4:] == ".csv" or self.file_path[-5:] == ".xlsx":
-                print(self.file_path)
+            if self.file_path[-4:] == ".csv" or self.file_path[-5:] == ".xlsx" or self.file_path[-8:] == ".parquet":
+                #print(self.file_path)
                 text = self.file_path+"\nOr\nDrag a new file to change"
                 self.setText(text)
                 self.main_window.open_file_page(self.file_path)
             else:
-                self.setText("Please drag a .csv or .xlsx file\nDrag a new file")
-                print(self.file_path)
+                self.setText("Please drag a .csv, .xlsx or .parquet file\nDrag a new file")
+                #print(self.file_path)
 
 
 class HomePage(QWidget):
@@ -78,16 +78,16 @@ class HomePage(QWidget):
         title.setFont(QFont("Helvetica Neue", 40))
         title.setGeometry(0, 0, 200, 200)
 
-        # description widget
-        description = QLabel("Upload the file you would like to open")
-        description.setMaximumHeight(100)
-
-        #WARNING:
+        # WARNING:
         warning = QLabel("Attention, les données importées doivent être labellisées")
         warning.setStyleSheet("font-weight: bold; color: red;")
         font_warning = QFont("Helvetica Neue", 20)
         warning.setFont(font_warning)
         warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # description widget
+        description = QLabel("Upload the file you would like to open")
+        description.setMaximumHeight(100)
 
         # edit_url widget
         self.edit_url = QLineEdit("")
@@ -138,14 +138,14 @@ class HomePage(QWidget):
         self.setLayout(page_layout)
 
     def browsefiles(self):
-        fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx)')
+        fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx *.parquet)')
         if fname != ('',''):
             self.edit_url.setText(fname[0])
             self.openwindow()
 
     def openwindow(self):
         if os.path.isfile(self.edit_url.text()):
-            if self.edit_url.text()[-4:] == ".csv" or self.edit_url.text()[-5:] == ".xlsx":
+            if self.edit_url.text()[-4:] == ".csv" or self.edit_url.text()[-5:] == ".xlsx" or self.edit_url.text()[-8:] == ".parquet":
                 self.main_window.open_file_page(self.edit_url.text())
 
     def large_file(self):
