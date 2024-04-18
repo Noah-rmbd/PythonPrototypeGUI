@@ -12,11 +12,11 @@ class ProgressBar(QGridLayout):
         self.step3_button.setEnabled(False)
         self.step4_button = QPushButton("4  PCA")
         self.step4_button.setEnabled(False)
-        self.step5_button = QPushButton("5  Testing")
+        self.step5_button = QPushButton("5  Training")
         self.step5_button.setEnabled(False)
-        self.step6_button = QPushButton("6 Training")
+        self.step6_button = QPushButton("6 Testing")
         self.step6_button.setEnabled(False)
-        self.step7_button = QPushButton("7 Training")
+        self.step7_button = QPushButton("7 Evaluation")
         self.step7_button.setEnabled(False)
 
         self.btn_undone = (
