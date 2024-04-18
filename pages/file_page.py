@@ -6,6 +6,9 @@ from secondary_pages.data_visualization import DataVisualization
 from secondary_pages.data_modification import DataModification
 from secondary_pages.data_analysis_tab import FenData
 from secondary_pages.feature_PCA import FenPCA
+from secondary_pages.data_training import DataTraining
+from secondary_pages.data_testing import DataTesting
+from secondary_pages.data_evaluation import DataEvaluation
 from secondary_pages.IA_tab import IATab
 
 from components.progress_bar import ProgressBar
@@ -96,20 +99,29 @@ class FileWindow(QWidget):
             self.data_frame_splited[0] = self.pca_selection.X_train
             self.data_frame_splited[1] = self.pca_selection.X_test
 
-            #self.data_frame_splited[0] = np.array(self.data_frame_splited[0])
-            #self.data_frame_splited[2] = np.array(self.data_frame_splited[2])
-            self.data_frame_splited[2] = self.data_frame_splited[2].reshape(-1, 1)
-            self.data_frame_splited[3] = self.data_frame_splited[3].reshape(-1, 1)
-            print("Array numpy x", self.data_frame_splited[0])
-            print("Array numpy y", self.data_frame_splited[2])
-            print("X", np.shape(self.data_frame_splited[0]))
-            print("y", np.shape(self.data_frame_splited[2]))
-
-            self.data_training = IATab(self.data_frame_splited)
+            self.data_training = DataTraining(self.data_frame_splited)
             self.content_layout.addWidget(self.data_training)
 
             self.nbr_step += 1
             self.progress_bar.step5_button.setEnabled(True)
+            self.content_layout.setCurrentIndex(self.nbr_step)
+
+        elif self.nbr_step == 4:
+            self.classifier = self.data_training.classifier
+
+            self.data_testing = DataTesting(self.data_frame_splited, self.classifier)
+            self.content_layout.addWidget(self.data_testing)
+
+            self.nbr_step += 1
+            self.progress_bar.step6_button.setEnabled(True)
+            self.content_layout.setCurrentIndex(self.nbr_step)
+
+        elif self.nbr_step == 5:
+            self.data_evaluation = DataEvaluation(self.data_frame_splited)
+            self.content_layout.addWidget(self.data_evaluation)
+
+            self.nbr_step += 1
+            self.progress_bar.step7_button.setEnabled(True)
             self.content_layout.setCurrentIndex(self.nbr_step)
 
 
@@ -147,6 +159,20 @@ class FileWindow(QWidget):
         elif self.nbr_step == 4:
             self.content_layout.removeWidget(self.data_training)
             self.progress_bar.step5_button.setEnabled(False)
+
+            self.nbr_step -= 1
+            self.content_layout.setCurrentIndex(self.nbr_step)
+
+        elif self.nbr_step == 5:
+            self.content_layout.removeWidget(self.data_testing)
+            self.progress_bar.step6_button.setEnabled(False)
+
+            self.nbr_step -= 1
+            self.content_layout.setCurrentIndex(self.nbr_step)
+
+        elif self.nbr_step == 6:
+            self.content_layout.removeWidget(self.data_evaluation)
+            self.progress_bar.step7_button.setEnabled(False)
 
             self.nbr_step -= 1
             self.content_layout.setCurrentIndex(self.nbr_step)
