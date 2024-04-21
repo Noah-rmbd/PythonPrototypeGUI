@@ -21,10 +21,23 @@ class FileWindow(QWidget):
     def __init__(self, data_frame, loading_bar, normal_visualization):
         QWidget.__init__(self)
 
+        window_style = (
+            'background-color:white; border-radius: 10px 0px 0px 0px;'
+        )
+
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         self.progress_bar = ProgressBar()
         self.next_step_bar = NextStepBar()
         self.content_layout = QStackedLayout()
+
+        self.next_step_bar_container = QWidget()
+        self.next_step_bar_container.setStyleSheet(window_style)
+        self.next_step_bar_container.setLayout(self.next_step_bar)
+
+        self.progress_bar_container = QWidget()
+        self.progress_bar_container.setStyleSheet(window_style)
+        self.progress_bar_container.setLayout(self.progress_bar)
 
         self.next_step_bar.next_button.clicked.connect(self.switch_step)
         self.next_step_bar.prev_button.clicked.connect(self.previous_step)
@@ -42,9 +55,9 @@ class FileWindow(QWidget):
 
         self.content_layout.addWidget(self.data_visualization)
 
-        layout.addLayout(self.progress_bar)
+        layout.addWidget(self.progress_bar_container)
         layout.addLayout(self.content_layout)
-        layout.addLayout(self.next_step_bar)
+        layout.addWidget(self.next_step_bar_container)
 
         layout.setSpacing(0)
         self.setLayout(layout)
