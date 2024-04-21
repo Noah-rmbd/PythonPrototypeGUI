@@ -20,12 +20,13 @@ class Window(QMainWindow):
         window_style = (
             'background-color:white'
         )
-        self.setStyleSheet(window_style)
+        #self.setStyleSheet(window_style)
 
         #The window (main_container) is composed of the nav bar and the content (main_content)
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_container = QHBoxLayout(central_widget)
+        main_container.setContentsMargins(0, 0, 0, 0)
 
         self.stacked_pages()
         main_container.addLayout(self.stacked_pages)
@@ -42,7 +43,7 @@ class Window(QMainWindow):
 
     def stacked_pages(self):
         self.stacked_pages = QStackedLayout()
-
+        self.stacked_pages.setContentsMargins(0, 0, 0 ,0)
         self.home_page = HomePage(self)
         self.stacked_pages.addWidget(self.home_page)
 
@@ -78,4 +79,3 @@ app = QApplication([])
 window = Window()
 window.show()
 sys.exit(app.exec())
-
