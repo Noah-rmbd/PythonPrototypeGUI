@@ -1,4 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QFileDialog, QLineEdit, QComboBox, QPushButton, QDialog, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QFileDialog, QLineEdit, QComboBox, QFrame,  QPushButton, QDialog, QTableWidget, QTableWidgetItem, QLabel, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, Normalizer, MinMaxScaler
 from components.dataframe_table import DataframeTable
@@ -9,16 +11,38 @@ class DataModification(QWidget):
     def __init__(self, data_frame, normal_visualization, next_step_bar):
         super().__init__()
 
+        self.data_frame = data_frame
+        self.next_step_bar = next_step_bar
+
         self.content_layout = QVBoxLayout()
         menu_layout = QVBoxLayout()
         del_col_layout = QVBoxLayout()
-        modify_col_layout = QVBoxLayout()
+        preprocessing_layout = QVBoxLayout()
         split_layout = QHBoxLayout()
+        split_step_layout = QVBoxLayout()
         export_changes_layout = QVBoxLayout()
         window_layout = QHBoxLayout()
 
-        self.data_frame = data_frame
-        self.next_step_bar = next_step_bar
+
+        menu_layout_container = QWidget()
+        menu_layout_container.setLayout(menu_layout)
+        menu_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        menu_layout.setSpacing(15)
+
+        self.Showdata()
+
+        content_layout_container = QWidget()
+        content_layout_container.setLayout(self.content_layout)
+
+        window_layout.setContentsMargins(0, 0, 0, 0)
+        window_layout.setSpacing(0)
+
+        menu_layout.setContentsMargins(20, 20, 30, 0)
+        self.content_layout.setContentsMargins(30, 20, 20, 10)
+
+        menu_font = QFont('Helvetica', 13)
+        menu_font.setBold(True)
+
         self.normal_visualization = normal_visualization
         self.data_frame_is_splited = False
         self.df_versions = []
@@ -26,10 +50,18 @@ class DataModification(QWidget):
         self.df_index_current_version = 0
 
         self.label = QLabel("File Table")
-        self.Showdata()
 
-        text_selected_col = QLabel("Delete column : ")
+        text_selected_col = QLabel("1 - Delete column")
+        text_selected_col.setFont(menu_font)
         text_selected_col.setMaximumHeight(20)
+
+        split_label = QLabel("2 - Split data")
+        split_label.setFont(menu_font)
+        split_label.setMaximumHeight(20)
+
+        preprocessing_label = QLabel("3 - Transform data")
+        preprocessing_label.setFont(menu_font)
+        preprocessing_label.setMaximumHeight(20)
 
         self.insert_name = QLineEdit()
         self.index = 0
@@ -42,6 +74,9 @@ class DataModification(QWidget):
         self.back_button = QPushButton("Back")
         self.split_button = QPushButton("Split data")
         self.split_combo = QComboBox()
+
+        self.split_button.setToolTip("Split data in two parts, one for training, the other for testing")
+        self.split_combo.setToolTip("Select the percentage of data used for testing")
 
         self.split_combo.addItem("20 %")
         self.split_combo.addItem("30 %")
@@ -67,25 +102,40 @@ class DataModification(QWidget):
         del_col_layout.addWidget(text_selected_col)
         del_col_layout.addWidget(self.combobox)
         del_col_layout.addWidget(self.delete_button)
+        del_col_layout.setSpacing(10)
 
-        modify_col_layout.addLayout(split_layout)
+
+        split_step_layout.addWidget(split_label)
+        split_step_layout.addLayout(split_layout)
+        split_step_layout.setSpacing(10)
+        split_layout.setContentsMargins(0, 0, 0, 0)
         split_layout.addWidget(self.split_button)
         split_layout.addWidget(self.split_combo)
-        modify_col_layout.addWidget(self.normalize_button)
-        modify_col_layout.addWidget(self.standardize_button)
+
+        preprocessing_layout.addWidget(preprocessing_label)
+        preprocessing_layout.addWidget(self.normalize_button)
+        preprocessing_layout.addWidget(self.standardize_button)
+        preprocessing_layout.setSpacing(10)
+
         export_changes_layout.addWidget(self.back_button)
         export_changes_layout.addWidget(self.save_button)
+        export_changes_layout.setSpacing(10)
 
         self.normalize_button.setEnabled(False)
         self.standardize_button.setEnabled(False)
         self.back_button.setEnabled(False)
 
         menu_layout.addLayout(del_col_layout)
-        menu_layout.addLayout(modify_col_layout)
+        menu_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
+        menu_layout.addLayout(split_step_layout)
+        menu_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
+        menu_layout.addLayout(preprocessing_layout)
+        menu_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
         menu_layout.addLayout(export_changes_layout)
 
-        window_layout.addLayout(self.content_layout)
-        window_layout.addLayout(menu_layout)
+        window_layout.addWidget(content_layout_container)
+        window_layout.addWidget(QFrame(frameShape=QFrame.Shape.VLine))
+        window_layout.addWidget(menu_layout_container)
 
         self.setLayout(window_layout)
 
@@ -131,15 +181,21 @@ class DataModification(QWidget):
 
         self.next_step_bar.show_loading("Refreshing table preview")
         self.table_widget = DataframeTable(self.data_frame, self.next_step_bar.loading_bar)
+        self.table_widget.setStyleSheet(" ")
         self.content_layout.addWidget(self.table_widget)
         self.next_step_bar.hide_loading()
 
     def Showdata_splited(self, df_training, df_testing):
+        menu_font = QFont('Helvetica', 13)
+        menu_font.setBold(True)
         for i in reversed(range(self.content_layout.count())):
             self.content_layout.itemAt(i).widget().setParent(None)
 
         table_1_label = QLabel("Training data")
         table_2_label = QLabel("Testing data")
+
+        table_1_label.setFont(menu_font)
+        table_2_label.setFont(menu_font)
 
         self.next_step_bar.show_loading("Training data preview")
         table_1 = DataframeTable(df_training, self.next_step_bar.loading_bar)
@@ -151,6 +207,7 @@ class DataModification(QWidget):
 
         self.content_layout.addWidget(table_1_label)
         self.content_layout.addWidget(table_1)
+        self.content_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
         self.content_layout.addWidget(table_2_label)
         self.content_layout.addWidget(table_2)
 
