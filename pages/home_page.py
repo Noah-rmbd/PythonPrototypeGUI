@@ -14,6 +14,7 @@ class DragAndDrop(QPushButton):
         self.main_window = main_window
         self.setAcceptDrops(True)
         self.setText("Drag a .csv or .xlsx file")
+        self.setToolTip("Drag and drop the file you would like to open")
 
         self.setMinimumHeight(150)
         self.btnpressed = (
@@ -21,8 +22,8 @@ class DragAndDrop(QPushButton):
         )
 
         self.btnnormal = (
-            'QPushButton::hover{background-color : #C4C4C4; border:3px #e1e1e1}QPushButton{background-color:#f0f0f0; border:3px solid #f0f0f0; border-radius: 6px; color:black;}')
-
+            'QPushButton::hover{background-color : #C4C4C4; border:3px #e1e1e1}QPushButton{background-color:white; border:3px solid white; border-radius: 10px; color:black;}')
+        ##f0f0f0
         self.setStyleSheet(self.btnnormal)
         self.pressed.connect(self.btn_pressed)
         self.released.connect(self.btn_realeased)
@@ -73,14 +74,25 @@ class HomePage(QWidget):
         url_layout = QHBoxLayout()
         self.file_layout = QVBoxLayout()
 
+        page_layout.setContentsMargins(30, 90, 30, 20)
+        page_layout.setSpacing(40)
+
         # title widget
-        title = QLabel("Accueil")
-        title.setFont(QFont("Helvetica Neue", 40))
-        title.setGeometry(0, 0, 200, 200)
+        title_font = QFont("Helvetica Neue", 40)
+        title_font.setBold(True)
+        title = QLabel("Welcome to Fault Predictor Pro 2024")
+        title.setFont(title_font)
+        title.setGeometry(0, 0, 5630, 3648)
+        title.setMaximumWidth(1800)
+        title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        title.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        title.setContentsMargins(20, 0, 0, 15)
+        title.setStyleSheet('color:white; border-radius:10px; border: 0px solid black; background-image:url("logos_et_images/home_image.png");background-repeat: no-repeat; background-position: center;')
 
         # WARNING:
-        warning = QLabel("Attention, les données importées doivent être labellisées")
+        warning = QLabel("Warning, your dataset must be labelled")
         warning.setStyleSheet("font-weight: bold; color: red;")
+        warning.setMaximumHeight(30)
         font_warning = QFont("Helvetica Neue", 20)
         warning.setFont(font_warning)
         warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -91,6 +103,7 @@ class HomePage(QWidget):
 
         # edit_url widget
         self.edit_url = QLineEdit("")
+        self.edit_url.setPlaceholderText("Or enter the url here")
         self.edit_url.setMaximumHeight(80)
         self.edit_url.returnPressed.connect(self.openwindow)
 
@@ -101,37 +114,45 @@ class HomePage(QWidget):
         drag_and_drop.clicked.connect(self.browsefiles)
 
         # adding all the widgets to the different layouts
+        action_layout = QVBoxLayout()
+        action_layout.setSpacing(20)
+
         url_layout.addWidget(self.edit_url)
         url_layout.addWidget(open_files)
 
         # Charger l'image avec QPixmap
         pixmap_poly = QPixmap(
-            r'logos_et_images/logo_polytech.png')  # on utilise r pour faire une chaîne brute et éviter les problèmes avec les backslash
+            'logos_et_images/logo_polytech.png')  # on utilise r pour faire une chaîne brute et éviter les problèmes avec les backslash
 
         label_image_poly = QLabel()
-        label_image_poly.setMaximumHeight(150)
         label_image_poly.setPixmap(pixmap_poly)
+        label_image_poly.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_image_poly.setGeometry(0, 0, 150, 150)
+        label_image_poly.setMaximumHeight(150)
 
         pixmap_laris = QPixmap(
-            r'logos_et_images/logo_laris.png')
+            'logos_et_images/logo_laris.png')
 
         label_image_laris = QLabel()
-        label_image_laris.setMaximumHeight(150)
         label_image_laris.setPixmap(pixmap_laris)
+        label_image_laris.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_image_laris.setGeometry(0, 0, 254, 152)
+        label_image_laris.setMaximumHeight(152)
 
         image_layout = QHBoxLayout()
         ##########################################
         page_layout.addWidget(title)
         ##########################################
-        self.file_layout.addWidget(warning)
-        self.file_layout.addWidget(drag_and_drop)
-        label = QLabel("Vous pouvez aussi copier l'url:")
-        self.file_layout.addWidget(label)
-        self.file_layout.addLayout(url_layout)
+
+        action_layout.addWidget(drag_and_drop)
+        action_layout.addLayout(url_layout)
+        action_layout.addWidget(warning)
 
         image_layout.addWidget(label_image_poly)
         image_layout.addWidget(label_image_laris)
         # adding all the layouts to the page widget
+
+        page_layout.addLayout(action_layout)
         page_layout.addLayout(self.file_layout)
         page_layout.addLayout(image_layout)
 
