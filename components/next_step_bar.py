@@ -6,7 +6,7 @@ class NextStepBar(QHBoxLayout):
         super().__init__()
 
         next_btn_style = (
-            'QPushButton::disabled{background-color : #e1e1e1; border:3px #e1e1e1}QPushButton::hover{background-color : #e1e1e1; border:1px solid #000000}QPushButton{background-color:#ffffff; border:1px solid #000000; color:black;}')
+            'QPushButton::disabled{background-color : #e1e1e1; border:3px #e1e1e1}QPushButton::hover{background-color : #e1e1e1; border:1px solid #000000}QPushButton{background-color:#ffffff; border:1px solid #000000; border-radius:0px;color:black;}')
         self.next_button = QPushButton("Next step ->")
         self.prev_button = QPushButton("<- Prev step")
 
@@ -16,6 +16,9 @@ class NextStepBar(QHBoxLayout):
         self.prev_button.setMinimumSize(100, 40)
         self.prev_button.setStyleSheet(next_btn_style)
         self.prev_button.hide()
+
+        self.next_button.setToolTip("Jump to the next step")
+        self.prev_button.setToolTip("Go back to the previous step")
 
         self.loading_bar = QProgressBar()
         self.loading_bar.setMaximumWidth(500)
