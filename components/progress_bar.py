@@ -20,9 +20,9 @@ class ProgressBar(QGridLayout):
         self.step7_button.setEnabled(False)
 
         self.btn_undone = (
-            'QPushButton::disabled{background-color : #e1e1e1; border:3px #e1e1e1}QPushButton{background-color:#f0f0f0; border:1px solid #000000; color:black;}')
+            'QPushButton::disabled{background-color : #e1e1e1; border:3px #e1e1e1}QPushButton{background-color:#f0f0f0; border:1px solid #000000; border_radius:0px; color:black;}')
         self.btn_done = (
-            'QPushButton::disabled{background-color : #e1e1e1; border:3px #e1e1e1}QPushButton{background-color:#ffffff; border:1px solid #000000; color:black;}')
+            'QPushButton::disabled{background-color : #e1e1e1; border:3px #e1e1e1}QPushButton{background-color:#ffffff; border:1px solid #000000; border-radius:0px; color:black;}')
 
         self.step1_button.setStyleSheet(self.btn_done)
         self.step2_button.setStyleSheet(self.btn_done)
@@ -74,4 +74,6 @@ class ProgressBar(QGridLayout):
         self.setColumnStretch(4, 1)
         self.setColumnStretch(5, 1)
         self.setColumnStretch(6, 1)
+
+        self.setContentsMargins(0, 0, 0, 0)
 
