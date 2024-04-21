@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QApplication
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont, QPainter, QPen, QBrush, QColor
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QSlider, QLabel, QComboBox, QApplication
 from sklearn.decomposition import PCA
 from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier
@@ -11,6 +11,49 @@ import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 import sys
 
+class Slider(QSlider):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setOrientation(Qt.Orientation.Horizontal)
+        print("cul")
+        self.setMinimum(0)
+        self.setMaximum(100)
+        self.setValue(50)
+        self.setTickInterval(10)
+        self.setSingleStep(1)
+        self.setPageStep(10)
+
+    '''
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+
+        # Dessiner le fond de la barre spider
+        painter.setBrush(QBrush(QColor("white")))
+        painter.drawRect(self.rect())
+
+        # Dessiner la ligne centrale
+        pen = QPen(QColor("black"))
+        pen.setWidth(2)
+        painter.setPen(pen)
+        painter.drawLine(self.width() / 2, 0, self.width() / 2, self.height())
+
+        # Dessiner les lignes des graduations
+        pen.setWidth(1)
+        painter.setPen(pen)
+        for i in range(1, 11):
+            x = self.width() / 2 + (i - 5) * self.width() / 10
+            painter.drawLine(x, self.height() - 5, x, self.height())
+            painter.drawText(x - 5, self.height() + 15, str(i * 10))
+
+        # Dessiner le curseur de la barre spider
+        pen.setWidth(3)
+        painter.setPen(pen)
+        brush = QBrush(QColor("red"))
+        painter.setBrush(brush)
+        x = self.width() / 2 + (self.value() - 50) * self.width() / 100
+        painter.drawEllipse(x - 5, self.height() - 15, 10, 10)
+    '''
 
 class FenPCA(QWidget):
     def __init__(self, dataframe_splited):
@@ -49,6 +92,9 @@ class FenPCA(QWidget):
         self.pca_combo.addItem("0.8")
         self.pca_combo.currentIndexChanged.connect(self.enable_pca_button)
 
+
+
+
         # Ajouter le bouton pour appliquer la PCA
 
         self.pca_button = QPushButton("Apply PCA")
@@ -62,7 +108,11 @@ class FenPCA(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(self.canvas)
         layout.addWidget(self.pca_combo)
+
         layout.addWidget(self.pca_button)
+
+    def pr(self):
+        print(self.slider.value())
 
     def enable_pca_button(self):
         self.pca_button.setEnabled(True)
