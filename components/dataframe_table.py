@@ -19,7 +19,7 @@ class DataframeTable(QTableWidget):
 
         if loading_bar is not None:
             for i in range(num_rows):
-                loading_bar.setValue(100 * i / num_rows)
+                loading_bar.setValue(int(100 * i / num_rows))
                 QApplication.processEvents()
                 for j in range(num_cols):
                     self.setItem(i, j, QTableWidgetItem(str(data_frame.iat[i, j])))
