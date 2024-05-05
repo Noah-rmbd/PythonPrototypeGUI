@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from sklearn import metrics
+from tqdm import tqdm
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -19,7 +20,7 @@ from components.classe_bouton import *
 
 
 class DataTraining(QWidget):
-    def __init__(self, dataframe_splited):
+    def __init__(self, dataframe_splited, next_step_bar):
 
         self.predictions_train = None
         self.predictions_test = None
@@ -67,6 +68,9 @@ class DataTraining(QWidget):
             self.current_algo_label.setFont(font)
             self.label_train_scores.setFont(font)
 
+            self.next_step_bar = next_step_bar
+            self.next_step_bar.next_button.setEnabled(False)
+
             ############ Variables pour hyperparamètres #####################
             self.criterian_combo = QComboBox()
             self.criterian_combo.addItem("Gini (default)")
@@ -97,6 +101,10 @@ class DataTraining(QWidget):
             self.learning_rate_combo.addItem("invscaling")
             self.learning_rate_combo.addItem("adaptive")
             self.learning_rate_combo.currentIndexChanged.connect(self.MLP_criterion_update)
+
+            self.algorithm_name = None
+            self.hyperparameters = None
+
             #initialisation des hyperparamètres
 
             self.k_value_as_int = 5
@@ -464,8 +472,8 @@ class DataTraining(QWidget):
             else:
                 raise ValueError(f"Unknown classifier type: {classifier}")
 
-
-            classifier_obj.fit(X_train, y_train)
+            #with tqdm(total=len(X)) as pbar:
+            classifier_obj.fit(X_train, y_train) #, fit_params={'callbacks': [lambda x: pbar.update(x.n_samples_processed_)]}
             self.classifier = classifier_obj
             predictions_train = classifier_obj.predict(X_train)
             predictions_test = classifier_obj.predict(X_test)
@@ -524,6 +532,7 @@ class DataTraining(QWidget):
                 print("no predictions_test")
             if self.predictions_train is not None:
                     self.plot_button.setEnabled(True)
+                    self.next_step_bar.next_button.setEnabled(True)
                     print("plot_button enabled")
                     if self.count_connection ==0:
                         self.plot_button.clicked.connect(self.heat_confusion_matrix)
@@ -541,6 +550,8 @@ class DataTraining(QWidget):
     def update_current_algorithm_label(self, algorithm_name, **kwargs):
         hyperparameters = ", ".join([f"{key}={value}" for key, value in kwargs.items()])
         self.current_algo_label.setText(f"{algorithm_name} - Hyperparameters: {hyperparameters}")
+        self.algorithm_name = algorithm_name
+        self.hyperparameters = hyperparameters
 
 
 class IATabTest():
