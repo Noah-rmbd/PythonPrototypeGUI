@@ -1,6 +1,8 @@
+import pandas as pd
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
+import csv
 
 import os
 #Prochaine étape fusionner bouton et champ de drag and drop
@@ -87,7 +89,7 @@ class HomePage(QWidget):
         title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         title.setAlignment(Qt.AlignmentFlag.AlignBottom)
         title.setContentsMargins(20, 0, 0, 15)
-        title.setStyleSheet('color:white; border-radius:10px; border: 0px solid black; background-image:url("logos_et_images/home_image.png");background-repeat: no-repeat; background-position: center;')
+        title.setStyleSheet('color:white; border-radius:10px; border: 0px solid black; background-image:url("resources/home_image.png");background-repeat: no-repeat; background-position: center;')
 
         # WARNING:
         warning = QLabel("Warning, your dataset must be labelled")
@@ -120,24 +122,27 @@ class HomePage(QWidget):
         url_layout.addWidget(self.edit_url)
         url_layout.addWidget(open_files)
 
-        # Charger l'image avec QPixmap
-        pixmap_poly = QPixmap(
-            'logos_et_images/logo_polytech.png')  # on utilise r pour faire une chaîne brute et éviter les problèmes avec les backslash
+        #Recently opened
+        self.recently_opened_layout = self.show_recently_opened()
 
+        # Charger l'image avec QPixmap
+        pixmap_poly = QPixmap("resources/logo_polytech.png")
+        # on utilise r pour faire une chaîne brute et éviter les problèmes avec les backslash
         label_image_poly = QLabel()
         label_image_poly.setPixmap(pixmap_poly)
         label_image_poly.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label_image_poly.setGeometry(0, 0, 150, 150)
         label_image_poly.setMaximumHeight(150)
 
-        pixmap_laris = QPixmap(
-            'logos_et_images/logo_laris.png')
+        pixmap_laris = QPixmap("resources/logo_laris.png")
 
         label_image_laris = QLabel()
         label_image_laris.setPixmap(pixmap_laris)
         label_image_laris.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label_image_laris.setGeometry(0, 0, 254, 152)
         label_image_laris.setMaximumHeight(152)
+
+        self.bar = QProgressBar()
 
         image_layout = QHBoxLayout()
         ##########################################
@@ -154,6 +159,9 @@ class HomePage(QWidget):
 
         page_layout.addLayout(action_layout)
         page_layout.addLayout(self.file_layout)
+        self.file_layout.addWidget(self.bar)
+        self.file_layout.addLayout(self.recently_opened_layout)
+        self.bar.hide()
         page_layout.addLayout(image_layout)
 
         self.setLayout(page_layout)
@@ -169,6 +177,53 @@ class HomePage(QWidget):
             if self.edit_url.text()[-4:] == ".csv" or self.edit_url.text()[-5:] == ".xlsx" or self.edit_url.text()[-8:] == ".parquet":
                 self.main_window.open_file_page(self.edit_url.text())
 
-    def large_file(self):
-        self.bar = QProgressBar()
-        self.file_layout.addWidget(self.bar)
+    def show_recently_opened(self):
+        self.recently_opened_df = pd.read_csv('resources/data.csv')
+        num_rows = len(self.recently_opened_df)
+        recently_opened_layout = QVBoxLayout()
+        recently_opened_layout.setContentsMargins(0, 0, 0, 0)
+        recently_opened_layout.setSpacing(0)
+
+        if num_rows != 0:
+            recently_opened_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
+            recently_opened_layout.setSpacing(0)
+            for i in range(num_rows):
+                url = self.recently_opened_df['file.url'][i]
+                date = str(self.recently_opened_df['date'][i])
+                button_widget = self.create_link_button(url, date)
+                recently_opened_layout.addWidget(button_widget)
+                recently_opened_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
+
+        return recently_opened_layout
+
+    def create_link_button(self, url, date):
+        button_widget = QWidget()
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(0)
+        date_label = QLabel(date)
+        button = QPushButton(url)
+        button.clicked.connect(lambda: self.main_window.open_file_page(url))
+        button.setMaximumHeight(20)
+        date_label.setMaximumHeight(20)
+        button_widget.setMaximumHeight(20)
+
+        button_layout.addWidget(button)
+        button_layout.addWidget(date_label)
+        button_widget.setLayout(button_layout)
+        button_widget.setStyleSheet('border: 0px solid black;')
+        return button_widget
+
+    def update_recently_opened(self):
+        for i in reversed(range(self.recently_opened_layout.count())):
+            self.recently_opened_layout.itemAt(i).widget().setParent(None)
+        self.file_layout.removeItem(self.recently_opened_layout)
+        self.recently_opened_layout = self.show_recently_opened()
+        self.file_layout.insertLayout(self.file_layout.count()-2, self.recently_opened_layout)
+        print('updating recently opened')
+
+    def show_bar(self):
+        self.bar.show()
+
+    def hide_bar(self):
+        self.bar.hide()
