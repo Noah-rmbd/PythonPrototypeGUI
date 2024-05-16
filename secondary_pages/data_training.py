@@ -145,13 +145,15 @@ class DataTraining(QWidget):
             #self.fig2, self.ax = plt.subplots(figsize=(16, 6))
             #####################################
 
-            self.main_layout = QVBoxLayout()
-            label_layout = QHBoxLayout()
+             self.main_layout = QVBoxLayout()
+            label_layout = QVBoxLayout()
             #label_layout.setAlignment(Qt.Alignment.AlignLeft)
             label_layout.addWidget(label)
-
             label_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
             label_layout.addWidget(self.current_algo_label)
+            label_layout.addWidget(self.fit_time_label)
+            label_layout.addWidget(self.predict_train_time_label)
+
             self.main_layout.addLayout(label_layout)
             self.main_layout.addWidget(self.label_train_scores)
             self.canvas_layout = QHBoxLayout()
@@ -483,6 +485,28 @@ class DataTraining(QWidget):
 
             cross_val_accu = cross_val_score(classifier_obj,X_train,y_train)
             print(f"{algorithm_name} Accuracy train: {self.accuracy_train}, accuracy test : {accuracy_test}")
+            print(f"{algorithm_name} Cross validation accuracy: {cross_val_accu}")
+             start_fit_time = tm.time()
+            classifier_obj.fit(X_train, y_train)
+            end_fit_time = tm.time()
+            execution_fit_time = end_fit_time - start_fit_time
+            print("Temps d'entrainement de l'algorithme:", execution_fit_time, "secondes")
+            self.fit_time_label.setText(f"Temps d'entrainement de l'algorithme: {str(execution_fit_time)} secondes")
+
+            self.classifier = classifier_obj
+
+            start_predict_train_time = tm.time()
+            predictions_train = classifier_obj.predict(X_train)
+            end_predict_train_time = tm.time()
+            execution_predict_train_time = end_predict_train_time - start_predict_train_time
+            print("Temps de prédiction des données d'entrainement:", execution_predict_train_time, "secondes")
+            self.predict_train_time_label.setText(f"Temps de prédiction des données d'entrainement: {str(execution_predict_train_time)} secondes")
+
+            self.accuracy_train = accuracy_score(y_train, predictions_train)
+            #accuracy_test = accuracy_score(y_test, predictions_test)
+
+            cross_val_accu = cross_val_score(classifier_obj,X_train,y_train)
+            print(f"{algorithm_name} Accuracy train: {self.accuracy_train}")
             print(f"{algorithm_name} Cross validation accuracy: {cross_val_accu}")
         except Exception as e:
             print(f"exception dans train algo:{e}")
