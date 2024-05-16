@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, recall_s
 
 
 class DataTesting(QWidget):
-    def __init__(self, dataframe, classifier,model_name, hyperparameters):
+    def __init__(self, dataframe, classifier, model_name, hyperparameters):
         super().__init__()
         try:
             X_train = dataframe[0]
@@ -23,9 +23,16 @@ class DataTesting(QWidget):
             end_time = tm.time()
             exe_time = end_time-start_time
 
-
             self.test_button = QPushButton("Test algorithm")
             self.test_button.clicked.connect(self.heat_confusion_matrix_test)
+
+            model_label = QLabel(f"Classifier : {model_name}")
+            model_font = QFont("Helvetica Neue", 20)
+            model_label.setFont(model_font)
+            hyperparameters_label = QLabel(hyperparameters)
+            label_layout = QHBoxLayout()
+            label_layout.addWidget(model_label)
+            label_layout.addWidget(hyperparameters_label)
 
             self.f_label = QLabel()
             self.accu_label = QLabel()
@@ -33,8 +40,8 @@ class DataTesting(QWidget):
             self.precision_label = QLabel()
             self.time_to_test_label = QLabel(f"Time to predict test data {str(exe_time)}seconds")
 
-
             self.layout = QVBoxLayout()
+            self.layout.addLayout(label_layout)
             self.layout.addWidget(self.f_label)
             self.layout.addWidget(self.accu_label)
             self.layout.addWidget(self.recall_label)
@@ -89,5 +96,3 @@ class DataTesting(QWidget):
             self.precision_label.setText(f'Precision score : {str(self.precision)}')
         except Exception as e:
             print(f"Exception dans les métriques de test conf matrix: {e}")
-
-
