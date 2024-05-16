@@ -12,6 +12,7 @@ from components.next_step_bar import NextStepBar
 
 import pandas as pd
 import numpy as np
+from sklearn.decomposition import PCA
 
 class FileWindow(QWidget):
     def __init__(self, data_frame, loading_bar):
@@ -117,8 +118,10 @@ class FileWindow(QWidget):
 
         elif self.nbr_step == 3:
             #Saves new data
-            self.data_frame_pca[0] = self.pca_selection.X_train
-            self.data_frame_pca[1] = self.pca_selection.X_test
+            pca = PCA(n_components=self.pca_selection.pct_variance_to_keep)
+            pca.fit(self.data_frame_features_selection[0])
+            self.data_frame_pca[0] = pca.fit_transform(self.data_frame_features_selection[0])
+            self.data_frame_pca[1] = pca.fit_transform(self.data_frame_features_selection[1])
             self.pca_percentage = self.pca_selection.pct_variance_to_keep
 
             #Generates the page
@@ -178,6 +181,7 @@ class FileWindow(QWidget):
         elif self.nbr_step == 4:
             self.content_layout.removeWidget(self.data_training)
             self.progress_bar.step5_button.setEnabled(False)
+            self.next_step_bar.next_button.setEnabled(True)
 
             self.nbr_step -= 1
             self.content_layout.setCurrentIndex(self.nbr_step)
