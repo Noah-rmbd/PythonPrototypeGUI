@@ -15,7 +15,6 @@ class Slider(QSlider):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setOrientation(Qt.Orientation.Horizontal)
-        print("cul")
         self.setMinimum(0)
         self.setMaximum(100)
         self.setValue(50)
