@@ -106,6 +106,9 @@ class DataTraining(QWidget):
             self.learning_rate_combo.currentIndexChanged.connect(self.MLP_criterion_update)
             #initialisation des hyperparamètres
 
+            self.algorithm_name = None
+            self.hyperparameters = None
+
             self.k_value_as_int = 5
             self.tree_value_as_int = 100
             self.insert_tree_number = None
@@ -563,3 +566,5 @@ class DataTraining(QWidget):
     def update_current_algorithm_label(self, algorithm_name, **kwargs):
         hyperparameters = ", ".join([f"{key}={value}" for key, value in kwargs.items()])
         self.current_algo_label.setText(f"{algorithm_name} - Hyperparameters: {hyperparameters}")
+        self.algorithm_name = algorithm_name
+        self.hyperparameters = hyperparameters
