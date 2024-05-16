@@ -1,14 +1,17 @@
+import time as tm
+
 import numpy as np
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtCore import Qt
 
 import seaborn as sns
+from PyQt6.QtWidgets import QWidget, QVBoxLayout,QHBoxLayout,QPushButton,QLabel,QLayout,QComboBox,QDialog,QLineEdit
+
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from sklearn import metrics
-from tqdm import tqdm
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -20,7 +23,7 @@ from components.classe_bouton import *
 
 
 class DataTraining(QWidget):
-    def __init__(self, dataframe_splited, next_step_bar):
+    def __init__(self, dataframe_splited):
 
         self.predictions_train = None
         self.predictions_test = None
@@ -68,9 +71,6 @@ class DataTraining(QWidget):
             self.current_algo_label.setFont(font)
             self.label_train_scores.setFont(font)
 
-            self.next_step_bar = next_step_bar
-            self.next_step_bar.next_button.setEnabled(False)
-
             ############ Variables pour hyperparamètres #####################
             self.criterian_combo = QComboBox()
             self.criterian_combo.addItem("Gini (default)")
@@ -101,10 +101,6 @@ class DataTraining(QWidget):
             self.learning_rate_combo.addItem("invscaling")
             self.learning_rate_combo.addItem("adaptive")
             self.learning_rate_combo.currentIndexChanged.connect(self.MLP_criterion_update)
-
-            self.algorithm_name = None
-            self.hyperparameters = None
-
             #initialisation des hyperparamètres
 
             self.k_value_as_int = 5
@@ -143,13 +139,11 @@ class DataTraining(QWidget):
             self.ok_button_RF.clicked.connect(self.fen_hyperpara_RF.accept)  # accept ferme la fenêtre
 
             #self.fig2, self.ax = plt.subplots(figsize=(16, 6))
-
+            #####################################
             self.fit_time_label = QLabel()
             self.predict_train_time_label = QLabel()
 
-            #####################################
-
-             self.main_layout = QVBoxLayout()
+            self.main_layout = QVBoxLayout()
             label_layout = QVBoxLayout()
             #label_layout.setAlignment(Qt.Alignment.AlignLeft)
             label_layout.addWidget(label)
@@ -217,7 +211,7 @@ class DataTraining(QWidget):
 
     def train_cart(self):
         try:
-            self.predictions_train, self.predictions_test, self.cross_validation = self.train_algo("DecisionTreeClassifier", self.X_train,
+            self.predictions_train, self.cross_validation = self.train_algo("DecisionTreeClassifier", self.X_train,
                                                                             self.X_test, self.y_train, self.y_test,
                                                                             "Cart Algorithm",
                                                                             criterion_in=self.actual_criterion)
@@ -225,22 +219,22 @@ class DataTraining(QWidget):
             #print("shape prediction:", self.predictions_train.shape)
         except Exception as e:
             print(f'Exception during training CART: {e}')
-        return self.predictions_train, self.predictions_test, self.cross_validation
+        return self.predictions_train, self.cross_validation
 
     def train_KNN(self):
         try:
-            self.predictions_train, self.predictions_test, self.cross_validation = self.train_algo("KNeighborsClassifier", self.X_train,
+            self.predictions_train, self.cross_validation = self.train_algo("KNeighborsClassifier", self.X_train,
                                                                             self.X_test, self.y_train, self.y_test,
                                                                             "KNN Algorithm",
                                                                             neighbors_nb=self.k_value_as_int)
             self.update_current_algorithm_label("K-Nearest Neighbors", neighbors=self.k_value_as_int)
         except Exception as e:
             print(f'Exception during training KNN: {e}')
-        return self.predictions_train, self.predictions_test, self.cross_validation
+        return self.predictions_train,self.cross_validation
 
     def train_random_forest(self):
         try:
-            self.predictions_train, self.predictions_test, self.cross_validation = self.train_algo("RandomForestClassifier", self.X_train,
+            self.predictions_train, self.cross_validation = self.train_algo("RandomForestClassifier", self.X_train,
                                                                             self.X_test, self.y_train, self.y_test,
                                                                             "Random Forest Algorithm",
                                                                             tree_nb=self.tree_value_as_int,
@@ -249,11 +243,11 @@ class DataTraining(QWidget):
                                                 criterion=self.actual_criterion)
         except Exception as e:
             print(f'Exception during training Random Forest: {e}')
-        return self.predictions_train, self.predictions_test, self.cross_validation
+        return self.predictions_train, self.cross_validation
 
     def train_MLP(self):
         try:
-            self.predictions_train, self.predictions_test, self.cross_validation = self.train_algo("MLPClassifier", self.X_train, self.X_test,
+            self.predictions_train, self.cross_validation = self.train_algo("MLPClassifier", self.X_train, self.X_test,
                                                                             self.y_train, self.y_test, "MLP Algorithm",
                                                                             mlp_solver=self.solver_type,
                                                                             mlp_learning_rate=self.learning_rate,
@@ -263,7 +257,7 @@ class DataTraining(QWidget):
                                                 activation=self.mlp_activation)
         except Exception as e:
             print(f'Exception during training MLP: {e}')
-        return self.predictions_train, self.predictions_test, self.cross_validation
+        return self.predictions_train, self.cross_validation
 
     def train_based_on_selection(self):
         #try:
@@ -478,19 +472,7 @@ class DataTraining(QWidget):
             else:
                 raise ValueError(f"Unknown classifier type: {classifier}")
 
-            #with tqdm(total=len(X)) as pbar:
-            classifier_obj.fit(X_train, y_train) #, fit_params={'callbacks': [lambda x: pbar.update(x.n_samples_processed_)]}
-            self.classifier = classifier_obj
-            predictions_train = classifier_obj.predict(X_train)
-            predictions_test = classifier_obj.predict(X_test)
-
-            self.accuracy_train = accuracy_score(y_train, predictions_train)
-            accuracy_test = accuracy_score(y_test, predictions_test)
-
-            cross_val_accu = cross_val_score(classifier_obj,X_train,y_train)
-            print(f"{algorithm_name} Accuracy train: {self.accuracy_train}, accuracy test : {accuracy_test}")
-            print(f"{algorithm_name} Cross validation accuracy: {cross_val_accu}")
-             start_fit_time = tm.time()
+            start_fit_time = tm.time()
             classifier_obj.fit(X_train, y_train)
             end_fit_time = tm.time()
             execution_fit_time = end_fit_time - start_fit_time
@@ -514,7 +496,7 @@ class DataTraining(QWidget):
             print(f"{algorithm_name} Cross validation accuracy: {cross_val_accu}")
         except Exception as e:
             print(f"exception dans train algo:{e}")
-        return predictions_train, predictions_test, cross_val_accu
+        return predictions_train, cross_val_accu
 
     def heat_confusion_matrix(self):
         print("entered conf matrix method")
@@ -560,7 +542,6 @@ class DataTraining(QWidget):
                 print("no predictions_test")
             if self.predictions_train is not None:
                     self.plot_button.setEnabled(True)
-                    self.next_step_bar.next_button.setEnabled(True)
                     print("plot_button enabled")
                     if self.count_connection ==0:
                         self.plot_button.clicked.connect(self.heat_confusion_matrix)
@@ -578,43 +559,4 @@ class DataTraining(QWidget):
     def update_current_algorithm_label(self, algorithm_name, **kwargs):
         hyperparameters = ", ".join([f"{key}={value}" for key, value in kwargs.items()])
         self.current_algo_label.setText(f"{algorithm_name} - Hyperparameters: {hyperparameters}")
-        self.algorithm_name = algorithm_name
-        self.hyperparameters = hyperparameters
 
-
-class IATabTest():
-    def __init__(self, dataframe_splited_in):
-        super().__init__()
-        self.dataframe = dataframe_splited_in  # le dataframe est désormais décomposé en 4 parties: X_train, X_test, Y_train et Y_test, suite à la data_modification
-        self.test_button = QPushButton()
-        self.test_button.connect(self.heat_confusion_matrix_test)
-
-        self.layout = QVBoxLayout()
-        self.fig_layout = QBoxLayout()
-        self.fig_layout.addWidget()
-        self.layout.addLayout(self.fig_layout)
-
-    def heat_confusion_matrix_test(self, y_actual, y_predicted):
-        try:
-            fig2, ax = plt.subplots(figsize=(16, 6))
-            cm = confusion_matrix(y_actual, y_predicted)
-            sns.heatmap(cm,
-                        annot=True,
-                        fmt='g',
-                        xticklabels=np.unique(y_actual),
-                        yticklabels=np.unique(y_actual)
-                        )
-
-            plt.ylabel('Prediction', fontsize=13)
-            plt.xlabel('Actual', fontsize=13)
-
-            plt.title('Testing Confusion Matrix', fontsize=17)
-
-            # Ajouter la figure à la mise en page canvas_layout
-            canvas = FigureCanvasQTAgg(fig2)
-
-        except Exception as e:
-            print(f"Exception during heatmap creation: {e}")
-            canvas = None
-
-        return canvas
