@@ -143,6 +143,10 @@ class DataTraining(QWidget):
             self.ok_button_RF.clicked.connect(self.fen_hyperpara_RF.accept)  # accept ferme la fenêtre
 
             #self.fig2, self.ax = plt.subplots(figsize=(16, 6))
+
+            self.fit_time_label = QLabel()
+            self.predict_train_time_label = QLabel()
+
             #####################################
 
              self.main_layout = QVBoxLayout()
