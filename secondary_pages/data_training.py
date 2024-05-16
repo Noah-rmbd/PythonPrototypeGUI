@@ -23,7 +23,7 @@ from components.classe_bouton import *
 
 
 class DataTraining(QWidget):
-    def __init__(self, dataframe_splited):
+    def __init__(self, dataframe_splited, next_step_bar):
 
         self.predictions_train = None
         self.predictions_test = None
@@ -70,6 +70,9 @@ class DataTraining(QWidget):
             label.setFont(font)
             self.current_algo_label.setFont(font)
             self.label_train_scores.setFont(font)
+
+            self.next_step_bar = next_step_bar
+            self.next_step_bar.next_button.setEnabled(False)
 
             ############ Variables pour hyperparamètres #####################
             self.criterian_combo = QComboBox()
@@ -542,6 +545,7 @@ class DataTraining(QWidget):
                 print("no predictions_test")
             if self.predictions_train is not None:
                     self.plot_button.setEnabled(True)
+                    self.next_step_bar.next_button.setEnabled(True)
                     print("plot_button enabled")
                     if self.count_connection ==0:
                         self.plot_button.clicked.connect(self.heat_confusion_matrix)
@@ -559,4 +563,3 @@ class DataTraining(QWidget):
     def update_current_algorithm_label(self, algorithm_name, **kwargs):
         hyperparameters = ", ".join([f"{key}={value}" for key, value in kwargs.items()])
         self.current_algo_label.setText(f"{algorithm_name} - Hyperparameters: {hyperparameters}")
-
