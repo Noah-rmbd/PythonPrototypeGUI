@@ -1,54 +1,52 @@
+import time as tm
+
 import numpy as np
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import *
-from PyQt6.QtCore import *
-
 import seaborn as sns
-
+from PyQt6.QtWidgets import *
+from components.classe_bouton import *
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-
-from sklearn import metrics
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.model_selection import train_test_split, cross_val_score
-
-from components.classe_bouton import *
-
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, recall_score, precision_score
 
 
 class DataTesting(QWidget):
-    def __init__(self, dataframe, classifier, model_name, hyperparameters):
+    def __init__(self, dataframe, classifier,model_name, hyperparameters):
         super().__init__()
-        X_train = dataframe[0]
-        X_test = dataframe[1]
-        y_train = dataframe[2]
-        self.actual = dataframe[3]  # le dataframe est désormais décomposé en 4 parties: X_train, X_test, Y_train et Y_test, suite à la data_modification
+        try:
+            X_train = dataframe[0]
+            X_test = dataframe[1]
+            y_train = dataframe[2]
+            self.actual = dataframe[3]  # le dataframe est désormais décomposé en 4 parties: X_train, X_test, Y_train et Y_test, suite à la data_modification
 
-        self.prediction = classifier.predict(X_test)
+            start_time=tm.time()
+            self.prediction = classifier.predict(X_test)
+            end_time = tm.time()
+            exe_time = end_time-start_time
 
-        self.test_button = QPushButton("Test algorithm")
-        self.test_button.clicked.connect(self.heat_confusion_matrix_test)
 
-        model_label = QLabel(f"Classifier : {model_name}")
-        model_font = QFont("Helvetica Neue", 20)
-        model_label.setFont(model_font)
-        hyperparameters_label = QLabel(hyperparameters)
-        label_layout = QHBoxLayout()
-        label_layout.addWidget(model_label)
-        label_layout.addWidget(hyperparameters_label)
-        self.f_label = QLabel()
+            self.test_button = QPushButton("Test algorithm")
+            self.test_button.clicked.connect(self.heat_confusion_matrix_test)
 
-        self.layout = QVBoxLayout()
-        self.layout.addLayout(label_layout)
-        self.layout.addWidget(self.f_label)
-        self.fig_layout = QHBoxLayout()
-        self.layout.addLayout(self.fig_layout)
-        self.layout.addWidget(self.test_button)
-        self.setLayout(self.layout)
+            self.f_label = QLabel()
+            self.accu_label = QLabel()
+            self.recall_label = QLabel()
+            self.precision_label = QLabel()
+            self.time_to_test_label = QLabel(f"Time to predict test data {str(exe_time)}seconds")
+
+
+            self.layout = QVBoxLayout()
+            self.layout.addWidget(self.f_label)
+            self.layout.addWidget(self.accu_label)
+            self.layout.addWidget(self.recall_label)
+            self.layout.addWidget(self.precision_label)
+            self.layout.addWidget(self.time_to_test_label)
+
+            self.fig_layout = QHBoxLayout()
+            self.layout.addLayout(self.fig_layout)
+            self.layout.addWidget(self.test_button)
+            self.setLayout(self.layout)
+        except Exception as e:
+            print(f"exception dans test algo: {e}")
 
     def heat_confusion_matrix_test(self):
         try:
@@ -75,6 +73,21 @@ class DataTesting(QWidget):
             print(f"Exception during heatmap creation: {e}")
             canvas = None
 
-        F1_score = f1_score(self.actual, self.prediction, average= 'macro')
-        self.fig_layout.addWidget(canvas)
-        self.f_label.setText(f"F1 score : {str(F1_score)}")
+        try:
+            self.F1_score = f1_score(self.actual, self.prediction, average= 'macro')
+            self.fig_layout.addWidget(canvas)
+
+            self.f_label.setText(f"F1 score : {str(self.F1_score)}")
+
+            self.testing_accuracy=accuracy_score(self.actual,self.prediction)
+            self.accu_label.setText(f'Training Accuracy : {str(self.testing_accuracy)}')
+
+            self.recall = recall_score (self.actual,self.prediction, average= 'macro')
+            self.recall_label.setText(f'Recall score : {str(self.recall)}')
+
+            self.precision = precision_score(self.actual,self.prediction, average= 'macro')
+            self.precision_label.setText(f'Precision score : {str(self.precision)}')
+        except Exception as e:
+            print(f"Exception dans les métriques de test conf matrix: {e}")
+
+
