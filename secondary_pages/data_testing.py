@@ -21,7 +21,7 @@ from components.classe_bouton import *
 
 
 class DataTesting(QWidget):
-    def __init__(self, dataframe, classifier):
+    def __init__(self, dataframe, classifier, model_name, hyperparameters):
         super().__init__()
         X_train = dataframe[0]
         X_test = dataframe[1]
@@ -33,9 +33,17 @@ class DataTesting(QWidget):
         self.test_button = QPushButton("Test algorithm")
         self.test_button.clicked.connect(self.heat_confusion_matrix_test)
 
+        model_label = QLabel(f"Classifier : {model_name}")
+        model_font = QFont("Helvetica Neue", 20)
+        model_label.setFont(model_font)
+        hyperparameters_label = QLabel(hyperparameters)
+        label_layout = QHBoxLayout()
+        label_layout.addWidget(model_label)
+        label_layout.addWidget(hyperparameters_label)
         self.f_label = QLabel()
 
         self.layout = QVBoxLayout()
+        self.layout.addLayout(label_layout)
         self.layout.addWidget(self.f_label)
         self.fig_layout = QHBoxLayout()
         self.layout.addLayout(self.fig_layout)
