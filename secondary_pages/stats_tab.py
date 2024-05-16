@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 
 class StatsTab(QWidget):
-    def __init__(self, data_frame, normal_visualization):
+    def __init__(self, data_frame):
         super().__init__()
         tab = QVBoxLayout()
 
@@ -38,9 +38,8 @@ class StatsTab(QWidget):
         for element in cols_to_be_deleted:
             self.data_frame = self.data_frame.drop(element, axis=1)
 
-        if normal_visualization:
-            # statistics aren't calculated with light mode
-            self.calculate_statistics(index_float_cols, name_cols)
+
+        self.calculate_statistics(index_float_cols, name_cols)
 
         fig, ax = plt.subplots(figsize=(100, 100))
 
@@ -53,10 +52,7 @@ class StatsTab(QWidget):
         heatmap.set_title('Correlation Heatmap from stats', fontdict={'fontsize': 12}, pad=12)
 
         tab.addWidget(self.canvas)
-
-        if normal_visualization:
-            #statistics aren't calculated with light mode
-            tab.addWidget(self.stats_widget)
+        tab.addWidget(self.stats_widget)
 
         self.setLayout(tab)
 
