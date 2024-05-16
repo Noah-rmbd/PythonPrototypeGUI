@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 class DataModification(QWidget):
-    def __init__(self, data_frame, normal_visualization, next_step_bar):
+    def __init__(self, data_frame, next_step_bar):
         super().__init__()
 
         self.data_frame = data_frame
@@ -43,7 +43,6 @@ class DataModification(QWidget):
         menu_font = QFont('Helvetica', 13)
         menu_font.setBold(True)
 
-        self.normal_visualization = normal_visualization
         self.data_frame_is_splited = False
         self.df_versions = []
         self.df_versions.append(self.data_frame.copy())
