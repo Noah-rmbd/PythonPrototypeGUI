@@ -64,6 +64,8 @@ class FileWindow(QWidget):
         self.setLayout(layout)
 
     def switch_step(self):
+        self.next_step_bar.next_button.clicked.disconnect(self.switch_step)
+        self.next_step_bar.prev_button.clicked.disconnect(self.previous_step)
         if self.nbr_step == 0:
             self.data_modification = DataModification(self.data_frame, self.next_step_bar)
             self.data_modification.split_button.clicked.connect(self.enable_button)
@@ -151,9 +153,13 @@ class FileWindow(QWidget):
             self.nbr_step += 1
             self.progress_bar.step7_button.setEnabled(True)
             self.content_layout.setCurrentIndex(self.nbr_step)
+        self.next_step_bar.next_button.clicked.connect(self.switch_step)
+        self.next_step_bar.prev_button.clicked.connect(self.previous_step)
 
 
     def previous_step(self):
+        self.next_step_bar.next_button.clicked.disconnect(self.switch_step)
+        self.next_step_bar.prev_button.clicked.disconnect(self.previous_step)
         if self.nbr_step == 1:
             self.content_layout.removeWidget(self.data_modification)
 
@@ -200,6 +206,8 @@ class FileWindow(QWidget):
 
             self.nbr_step -= 1
             self.content_layout.setCurrentIndex(self.nbr_step)
+        self.next_step_bar.next_button.clicked.connect(self.switch_step)
+        self.next_step_bar.prev_button.clicked.connect(self.previous_step)
 
     def disable_button(self):
         self.next_step_bar.next_button.setEnabled(False)
