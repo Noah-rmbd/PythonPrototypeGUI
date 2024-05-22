@@ -5,7 +5,7 @@ from PyQt6.QtGui import QFont, QIntValidator
 from PyQt6.QtCore import Qt
 
 import seaborn as sns
-from PyQt6.QtWidgets import QWidget, QVBoxLayout,QHBoxLayout,QPushButton,QLabel,QLayout,QComboBox,QDialog,QLineEdit
+from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout,QHBoxLayout,QPushButton,QLabel,QLayout,QComboBox,QDialog,QLineEdit
 
 
 from matplotlib import pyplot as plt
@@ -34,13 +34,17 @@ class DataTraining(QWidget):
             self.y_train = dataframe_splited[2]
             self.y_test = dataframe_splited[3]
 
+            #print("Taille X_test : ", np.shape(self.X_test), "Taille X_train : ", np.shape(self.X_train))
+
             print("X_train shape:", self.X_train.shape)
             print("X_test shape:", self.X_test.shape)
             print("y_train shape:", self.y_train.shape)
             print("y_test shape:", self.y_test.shape)
 
             self.algo_type_combo = QComboBox(self)
-            self.algo_type_combo.addItem("Choisissez un algorithme")
+            self.algo_type_combo.setMaximumWidth(200)
+            #self.algo_type_combo.addItem("Choisissez un algorithme")
+            self.algo_type_combo.setPlaceholderText("Select a model")
             self.algo_type_combo.addItem("CART")
             self.algo_type_combo.addItem("KNN")
             self.algo_type_combo.addItem("Random Forest")
@@ -49,27 +53,46 @@ class DataTraining(QWidget):
             self.algo_type_combo.currentIndexChanged.connect(self.hyperpara_based_on_selection)
             self.algo_type_combo.currentIndexChanged.connect(self.enable_train_button)
 
-            self.update_hyperparameter_button = QPushButton("Changer les hyperparamètres")
+            self.update_hyperparameter_button = QPushButton("Modify parameters")
+            self.update_hyperparameter_button.setMaximumWidth(200)
             self.update_hyperparameter_button.clicked.connect(self.reset_hyperpara)
             self.update_hyperparameter_button.clicked.connect(self.hyperpara_based_on_selection)
 
             self.train_button = QPushButton("Train algorithm")
+            self.train_button.setMaximumWidth(200)
             self.train_button.setEnabled(False)
             self.train_button.clicked.connect(self.train_based_on_selection)
             self.train_button.clicked.connect(self.enable_plot_button)
 
-            self.plot_button = QPushButton("Plot training confusion matrix")
+            self.plot_button = QPushButton("Confusion matrix")
+            self.plot_button.setMaximumWidth(200)
+            self.plot_button.setMinimumWidth(200)
             self.plot_button.setEnabled(False)
 
-            label=QLabel("Algorithme actuellement entrainé:")
-            self.current_algo_label = QLabel("Aucun")
+            label_layout = QVBoxLayout()
+            label_layout.setContentsMargins(30, 30, 15, 20)
+            label_layout.setSpacing(20)
+            label_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+            title_layout = QHBoxLayout()
+            title_layout.setContentsMargins(0, 0, 0, 0)
+            title_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+            menu_font = QFont('Helvetica', 13)
+            menu_font.setBold(True)
+
+            title_font = QFont('Helvetica', 20)
+            #title_font.setBold(True)
+
+            self.classifier_label = QLabel("Trained Classifier : None ")
+            self.classifier_label.setFont(title_font)
+            self.hyperparameters_label = QLabel("")
             self.label_train_scores = QLabel("")
 
-            font = QFont()
-            font.setPointSize(16)  # Set the desired font size
-            label.setFont(font)
-            self.current_algo_label.setFont(font)
-            self.label_train_scores.setFont(font)
+            title_layout.addWidget(self.classifier_label)
+            title_layout.addWidget(self.hyperparameters_label)
+            label_layout.addLayout(title_layout)
+            label_layout.addWidget(self.label_train_scores)
 
             self.next_step_bar = next_step_bar
             self.next_step_bar.next_button.setEnabled(False)
@@ -149,29 +172,63 @@ class DataTraining(QWidget):
             self.fit_time_label = QLabel()
             self.predict_train_time_label = QLabel()
 
-            self.main_layout = QVBoxLayout()
-            label_layout = QVBoxLayout()
-            #label_layout.setAlignment(Qt.Alignment.AlignLeft)
-            label_layout.addWidget(label)
-            label_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-            label_layout.addWidget(self.current_algo_label)
+            self.main_layout = QHBoxLayout()
+            self.main_layout.setContentsMargins(0, 0, 0, 0)
+            self.main_layout.setSpacing(0)
+            #label_layout = QVBoxLayout()
+            #label_layout.setContentsMargins(0, 0, 0, 0)
+            menu_layout = QVBoxLayout()
+            menu_layout.setSpacing(15)
+            menu_layout.setContentsMargins(20, 20, 30, 20)
+            menu_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+            algorithm_selection_layout = QVBoxLayout()
+            algorithm_selection_layout.setContentsMargins(0, 0, 0, 0)
+            algorithm_selection_label = QLabel("1 - Select the model")
+            algorithm_selection_label.setFont(menu_font)
+            algorithm_selection_label.setMaximumHeight(20)
+            algorithm_selection_label.setMaximumWidth(200)
+            algorithm_selection_layout.addWidget(algorithm_selection_label)
+            algorithm_selection_layout.addWidget(self.algo_type_combo)
+            algorithm_selection_layout.addWidget(self.update_hyperparameter_button)
+
+            train_layout = QVBoxLayout()
+            train_layout.setContentsMargins(0, 0, 0, 0)
+            train_label = QLabel("2 - Train the model")
+            train_label.setFont(menu_font)
+            train_label.setMaximumHeight(20)
+            train_label.setMaximumWidth(200)
+            train_layout.addWidget(train_label)
+            train_layout.addWidget(self.train_button)
+
+            menu_layout.addLayout(algorithm_selection_layout)
+            menu_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
+            menu_layout.addLayout(train_layout)
+            menu_layout.addWidget(QFrame(frameShape=QFrame.Shape.HLine))
+            menu_layout.addWidget(self.plot_button)
+
+            self.canvas_layout = QHBoxLayout()
+
             label_layout.addWidget(self.fit_time_label)
             label_layout.addWidget(self.predict_train_time_label)
+            label_layout.addWidget(self.label_train_scores)
+            label_layout.addLayout(self.canvas_layout)
+            label_layout.addStretch()
 
             self.main_layout.addLayout(label_layout)
-            self.main_layout.addWidget(self.label_train_scores)
-            self.canvas_layout = QHBoxLayout()
-            self.main_layout.addLayout(self.canvas_layout)
+            self.main_layout.addWidget(QFrame(frameShape=QFrame.Shape.VLine))
+            self.main_layout.addLayout(menu_layout)
+
             ############## tableau métriques #########################
             # table_widget = QTableWidget()
             # self.setup_table(actual_labels, predicted_labels)
             # main_layout.addWidget(table_widget)
             #####################################################
 
-            self.main_layout.addWidget(self.algo_type_combo)
-            self.main_layout.addWidget(self.train_button)
-            self.main_layout.addWidget(self.plot_button)
-            self.main_layout.addWidget(self.update_hyperparameter_button)
+            #self.main_layout.addWidget(self.algo_type_combo)
+            #self.main_layout.addWidget(self.train_button)
+            #self.main_layout.addWidget(self.plot_button)
+            #self.main_layout.addWidget(self.update_hyperparameter_button)
             #test_size_layout = QHBoxLayout()
             #test_size_layout.addWidget(text_test_size)
             #test_size_layout.addWidget(self.test_size_box)
@@ -558,13 +615,14 @@ class DataTraining(QWidget):
             print(f"exception dans enable_plot_button: {e}")
 
     def enable_train_button(self):
-        if self.algo_type_combo.currentText !="Choisissez un algorithme":
+        if self.algo_type_combo.currentText !="Select a model":
             self.train_button.setEnabled(True)
         else:
             self.train_button.setEnabled(False)
 
     def update_current_algorithm_label(self, algorithm_name, **kwargs):
         hyperparameters = ", ".join([f"{key}={value}" for key, value in kwargs.items()])
-        self.current_algo_label.setText(f"{algorithm_name} - Hyperparameters: {hyperparameters}")
+        self.classifier_label.setText(f"Trained Classifier : {algorithm_name}")
+        self.hyperparameters_label.setText(hyperparameters)
         self.algorithm_name = algorithm_name
         self.hyperparameters = hyperparameters
