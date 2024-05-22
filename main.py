@@ -65,7 +65,6 @@ class Window(QMainWindow):
         dt_string = now.strftime("%d/%m/%Y %H:%M")
         for i in range(num_rows):
             if file_url in self.home_page.recently_opened_df['file.url'][i]:
-                self.home_page.recently_opened_df['date'][i] = 1
                 self.home_page.recently_opened_df.loc[i, 'date'] = dt_string
                 self.home_page.recently_opened_df.to_csv('resources/data.csv', index=False)
                 first_opened = False
