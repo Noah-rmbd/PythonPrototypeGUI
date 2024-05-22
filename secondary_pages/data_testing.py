@@ -3,6 +3,7 @@ import time as tm
 import numpy as np
 import seaborn as sns
 from PyQt6.QtWidgets import *
+from PyQt6.QtCore import Qt
 from components.classe_bouton import *
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -12,48 +13,60 @@ from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, recall_s
 class DataTesting(QWidget):
     def __init__(self, dataframe, classifier, model_name, hyperparameters):
         super().__init__()
-        try:
-            X_train = dataframe[0]
-            X_test = dataframe[1]
-            y_train = dataframe[2]
-            self.actual = dataframe[3]  # le dataframe est désormais décomposé en 4 parties: X_train, X_test, Y_train et Y_test, suite à la data_modification
+        X_train = dataframe[0]
+        X_test = dataframe[1]
+        y_train = dataframe[2]
+        self.actual = dataframe[3]  # le dataframe est désormais décomposé en 4 parties: X_train, X_test, Y_train et Y_test, suite à la data_modification
 
-            start_time=tm.time()
-            self.prediction = classifier.predict(X_test)
-            end_time = tm.time()
-            exe_time = end_time-start_time
+        start_time=tm.time()
+        self.prediction = classifier.predict(X_test)
+        end_time = tm.time()
+        exe_time = end_time-start_time
 
-            self.test_button = QPushButton("Test algorithm")
-            self.test_button.clicked.connect(self.heat_confusion_matrix_test)
+        #self.test_button = QPushButton("Test algorithm")
+        #self.test_button.clicked.connect(self.heat_confusion_matrix_test)
 
-            model_label = QLabel(f"Classifier : {model_name}")
-            model_font = QFont("Helvetica Neue", 20)
-            model_label.setFont(model_font)
-            hyperparameters_label = QLabel(hyperparameters)
-            label_layout = QHBoxLayout()
-            label_layout.addWidget(model_label)
-            label_layout.addWidget(hyperparameters_label)
+        model_label = QLabel(f"Classifier : {model_name}")
+        model_font = QFont("Helvetica Neue", 20)
+        model_label.setFont(model_font)
+        hyperparameters_label = QLabel(hyperparameters)
+        label_layout = QHBoxLayout()
+        label_layout.setContentsMargins(0, 0, 0, 0)
+        label_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        label_layout.setSpacing(50)
+        label_layout.addWidget(model_label)
+        label_layout.addWidget(hyperparameters_label)
 
-            self.f_label = QLabel()
-            self.accu_label = QLabel()
-            self.recall_label = QLabel()
-            self.precision_label = QLabel()
-            self.time_to_test_label = QLabel(f"Time to predict test data {str(exe_time)}seconds")
+        self.f_label = QLabel()
+        self.accu_label = QLabel()
+        self.recall_label = QLabel()
+        self.precision_label = QLabel()
+        self.time_to_test_label = QLabel(f"Time to predict test data {str(exe_time)} s")
 
-            self.layout = QVBoxLayout()
-            self.layout.addLayout(label_layout)
-            self.layout.addWidget(self.f_label)
-            self.layout.addWidget(self.accu_label)
-            self.layout.addWidget(self.recall_label)
-            self.layout.addWidget(self.precision_label)
-            self.layout.addWidget(self.time_to_test_label)
+        self.time_layout = QHBoxLayout()
+        self.time_layout.setContentsMargins(0, 0, 0, 0)
+        self.time_layout.addWidget(self.f_label)
+        self.time_layout.addWidget(self.time_to_test_label)
 
-            self.fig_layout = QHBoxLayout()
-            self.layout.addLayout(self.fig_layout)
-            self.layout.addWidget(self.test_button)
-            self.setLayout(self.layout)
-        except Exception as e:
-            print(f"exception dans test algo: {e}")
+        self.scores_layout = QHBoxLayout()
+        self.scores_layout.setContentsMargins(0, 0, 0, 0)
+        self.scores_layout.addWidget(self.accu_label)
+        self.scores_layout.addWidget(self.precision_label)
+        self.scores_layout.addWidget(self.recall_label)
+
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(30, 30, 30, 20)
+        self.layout.addLayout(label_layout)
+        self.layout.addLayout(self.time_layout)
+        self.layout.addLayout(self.scores_layout)
+
+        self.fig_layout = QHBoxLayout()
+        self.layout.addLayout(self.fig_layout)
+        #self.layout.addWidget(self.test_button)
+        self.setLayout(self.layout)
+
+        self.heat_confusion_matrix_test()
+
 
     def heat_confusion_matrix_test(self):
         try:
