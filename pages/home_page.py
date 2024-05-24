@@ -150,7 +150,7 @@ class HomePage(QWidget):
         ##########################################
 
         action_layout.addWidget(drag_and_drop)
-        action_layout.addLayout(url_layout)
+        #action_layout.addLayout(url_layout)
         action_layout.addWidget(warning)
 
         image_layout.addWidget(label_image_poly)
