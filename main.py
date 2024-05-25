@@ -16,7 +16,7 @@ class Window(QMainWindow):
         self.setWindowTitle("Application")
         self.setWindowIcon(QIcon("icon.png"))
 
-        self.setMinimumSize(540,360)
+        self.setMinimumSize(1065, 675)
         self.setGeometry(200, 100, 1080, 720)
 
         window_style = (
@@ -54,6 +54,7 @@ class Window(QMainWindow):
 
     def open_home_page(self):
         self.stacked_pages.removeWidget(self.file_page)
+        self.home_page.generate_background_image()
         self.data_frame = None
         self.home_action.setDisabled(True)
 
