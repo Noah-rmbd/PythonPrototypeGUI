@@ -2,6 +2,7 @@ import pandas as pd
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
+import random
 import csv
 
 import os
@@ -76,28 +77,33 @@ class HomePage(QWidget):
         url_layout = QHBoxLayout()
         self.file_layout = QVBoxLayout()
 
-        page_layout.setContentsMargins(30, 90, 30, 20)
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        page_layout.setContentsMargins(30, 50, 30, 20)
+        main_layout.setSpacing(0)
         page_layout.setSpacing(40)
 
         # title widget
         title_font = QFont("Helvetica Neue", 40)
         title_font.setBold(True)
-        title = QLabel("Welcome to Fault Predictor Pro 2024")
-        title.setFont(title_font)
-        title.setGeometry(0, 0, 5630, 3648)
-        title.setMaximumWidth(1800)
-        title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        title.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        title.setContentsMargins(20, 0, 0, 15)
-        title.setStyleSheet('color:white; border-radius:10px; border: 0px solid black; background-image:url("resources/home_image.png");background-repeat: no-repeat; background-position: center;')
+        self.title = QLabel("Welcome to Fault Predictor Pro 2024")
+        self.title.setFont(title_font)
+        self.title.setGeometry(0, 0, 5630, 3648)
+        self.title.setMaximumWidth(1800)
+        self.title.setMinimumHeight(110)
+        self.title.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.title.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        self.title.setContentsMargins(30, 0, 0, 15)
+        self.generate_background_image()
 
         # WARNING:
-        warning = QLabel("Warning, your dataset must be labelled")
+        warning = QLabel("Warning : your dataset must be labelled")
         warning.setStyleSheet("font-weight: bold; color: red;")
+        warning.setAlignment(Qt.AlignmentFlag.AlignLeft)
         warning.setMaximumHeight(30)
         font_warning = QFont("Helvetica Neue", 20)
         warning.setFont(font_warning)
-        warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # description widget
         description = QLabel("Upload the file you would like to open")
@@ -130,41 +136,60 @@ class HomePage(QWidget):
         # on utilise r pour faire une chaîne brute et éviter les problèmes avec les backslash
         label_image_poly = QLabel()
         label_image_poly.setPixmap(pixmap_poly)
-        label_image_poly.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_image_poly.setAlignment(Qt.AlignmentFlag.AlignBottom)
         label_image_poly.setGeometry(0, 0, 150, 150)
         label_image_poly.setMaximumHeight(150)
+        label_image_poly.setMinimumHeight(145)
 
         pixmap_laris = QPixmap("resources/logo_laris.png")
 
         label_image_laris = QLabel()
         label_image_laris.setPixmap(pixmap_laris)
-        label_image_laris.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_image_laris.setAlignment(Qt.AlignmentFlag.AlignBottom)
         label_image_laris.setGeometry(0, 0, 254, 152)
         label_image_laris.setMaximumHeight(152)
+        label_image_laris.setMinimumHeight(150)
 
+        label_credits1 = QLabel("Developped by : Louis Arnaud and Noah Raimbaud")
+        label_credits1.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        label_credits1.setMaximumHeight(15)
+        label_credits2 = QLabel("With the help of : Bassel Chokr and Nizar Chatti")
+        label_credits2.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        label_credits2.setMaximumHeight(15)
+        credits_layout = QVBoxLayout()
+        credits_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        credits_layout.setContentsMargins(0, 0, 0, 0)
+        credits_layout.setSpacing(8)
+        credits_layout.addWidget(label_credits1)
+        credits_layout.addWidget(label_credits2)
         self.bar = QProgressBar()
 
         image_layout = QHBoxLayout()
         ##########################################
-        page_layout.addWidget(title)
+        #page_layout.addWidget(title)
         ##########################################
 
+        action_layout.addWidget(warning)
         action_layout.addWidget(drag_and_drop)
         #action_layout.addLayout(url_layout)
-        action_layout.addWidget(warning)
 
+        image_layout.addLayout(credits_layout)
+        image_layout.addStretch()
         image_layout.addWidget(label_image_poly)
         image_layout.addWidget(label_image_laris)
         # adding all the layouts to the page widget
 
         page_layout.addLayout(action_layout)
         page_layout.addLayout(self.file_layout)
-        self.file_layout.addWidget(self.bar)
         self.file_layout.addLayout(self.recently_opened_layout)
+        page_layout.addWidget(self.bar)
         self.bar.hide()
         page_layout.addLayout(image_layout)
 
-        self.setLayout(page_layout)
+        main_layout.addWidget(self.title)
+        main_layout.addLayout(page_layout)
+
+        self.setLayout(main_layout)
 
     def browsefiles(self):
         fname = QFileDialog.getOpenFileName(self, 'Open File', '/Users/noah-r/Downloads/', 'CSV, XLSX files (*.csv *.xlsx *.parquet)')
@@ -198,6 +223,7 @@ class HomePage(QWidget):
 
     def create_link_button(self, url, date):
         button_widget = QWidget()
+        button_widget.setMinimumHeight(17)
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(0)
@@ -227,3 +253,15 @@ class HomePage(QWidget):
 
     def hide_bar(self):
         self.bar.hide()
+
+    def generate_background_image(self):
+        style_1 = 'color:white; border: 0px solid black; background-image:url("resources/home_image.png");background-repeat: no-repeat; background-position: center;'
+        style_2 = 'color:white; border: 0px solid black; background-image:url("resources/home_image_2.jpg");background-repeat: no-repeat; background-position: center;'
+        style_3 = 'color:white; border: 0px solid black; background-image:url("resources/home_image_3.jpg");background-repeat: no-repeat; background-position: center;'
+        background = random.randint(0, 2)
+        if background == 0:
+            self.title.setStyleSheet(style_1)
+        elif background == 1:
+            self.title.setStyleSheet(style_2)
+        else:
+            self.title.setStyleSheet(style_3)
