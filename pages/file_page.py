@@ -83,7 +83,7 @@ class FileWindow(QWidget):
             print(self.nbr_step)
 
         elif self.nbr_step == 1:
-            #self.data_frame = self.data_modification.data_frame
+            data_frame_columns = self.data_modification.data_frame.columns
             self.data_frame_splited = [self.data_modification.X_train, self.data_modification.X_test,
                                        self.data_modification.y_train, self.data_modification.y_test]
             self.data_frame_features_selection = self.data_frame_splited.copy()
@@ -92,7 +92,7 @@ class FileWindow(QWidget):
 
             #modifier self.data_frame pour que la colonne label soit automatiquement à la fin
 
-            self.data_analysis = FenData(self.data_frame.columns, self.data_frame_splited, self.next_step_bar)
+            self.data_analysis = FenData(data_frame_columns, self.data_frame_splited, self.next_step_bar)
             self.content_layout.addWidget(self.data_analysis)
 
             self.nbr_step += 1
