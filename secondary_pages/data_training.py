@@ -138,6 +138,8 @@ class DataTraining(QWidget):
             self.actual_criterion = "gini"
             self.mlp_activation = "relu"
             self.learning_rate = "constant"
+            self.solver_type = "adam"
+
 
             ##################################################################
 
