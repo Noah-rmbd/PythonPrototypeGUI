@@ -83,7 +83,7 @@ class FileWindow(QWidget):
             print(self.nbr_step)
 
         elif self.nbr_step == 1:
-            data_frame_columns = self.data_modification.data_frame.columns
+            #self.data_frame = self.data_modification.data_frame
             self.data_frame_splited = [self.data_modification.X_train, self.data_modification.X_test,
                                        self.data_modification.y_train, self.data_modification.y_test]
             self.data_frame_features_selection = self.data_frame_splited.copy()
@@ -92,7 +92,7 @@ class FileWindow(QWidget):
 
             #modifier self.data_frame pour que la colonne label soit automatiquement à la fin
 
-            self.data_analysis = FenData(data_frame_columns, self.data_frame_splited, self.next_step_bar)
+            self.data_analysis = FenData(self.data_frame.columns, self.data_frame_splited, self.next_step_bar)
             self.content_layout.addWidget(self.data_analysis)
 
             self.nbr_step += 1
@@ -138,6 +138,7 @@ class FileWindow(QWidget):
             self.classifier = self.data_training.classifier
             self.name_model = self.data_training.algorithm_name
             self.hyperparameters = self.data_training.hyperparameters
+            self.time_model = self.data_training.execution_predict_train_time
 
             self.data_testing = DataTesting(self.data_frame_pca, self.classifier, self.name_model, self.hyperparameters)
             self.content_layout.addWidget(self.data_testing)
@@ -147,7 +148,7 @@ class FileWindow(QWidget):
             self.content_layout.setCurrentIndex(self.nbr_step)
 
         elif self.nbr_step == 5:
-            self.data_evaluation = DataEvaluation(self.data_frame_pca, self.classifier, self.name_model, self.hyperparameters, self.percentage_splited, self.features_selection_percentage, self.pca_percentage, self.next_step_bar)
+            self.data_evaluation = DataEvaluation(self.data_frame_pca, self.classifier, self.name_model, self.hyperparameters, self.percentage_splited, self.features_selection_percentage, self.pca_percentage, self.next_step_bar, self.time_model)
             self.content_layout.addWidget(self.data_evaluation)
 
             self.nbr_step += 1
@@ -194,7 +195,6 @@ class FileWindow(QWidget):
 
         elif self.nbr_step == 5:
             self.content_layout.removeWidget(self.data_testing)
-            self.next_step_bar.next_button.setText("Next Step ->")
             self.progress_bar.step6_button.setEnabled(False)
 
             self.nbr_step -= 1
@@ -203,6 +203,7 @@ class FileWindow(QWidget):
         elif self.nbr_step == 6:
             self.content_layout.removeWidget(self.data_evaluation)
             self.progress_bar.step7_button.setEnabled(False)
+            self.next_step_bar.next_button.setText("Next Step ->")
 
             self.nbr_step -= 1
             self.content_layout.setCurrentIndex(self.nbr_step)
